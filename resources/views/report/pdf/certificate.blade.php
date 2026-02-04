@@ -89,19 +89,19 @@
         }
 
         .bg-blue {
-            background-color: #79C4F2;
+            background-color: #012640;
             /* background-color: {{ $primaryColor }}; */
             font-weight: bold;
             padding-left: 5px;
             width: 100%;
-            color: #000;
+            color: #fff;
         }
 
         .square {
             display: inline-block;
             width: 12px;
             height: 12px;
-            background-color: #ACC011;
+            background-color: #DE523B;
             vertical-align: middle;
             /* Alinea verticalmente */
         }
@@ -310,7 +310,7 @@
 <body>
     <div class="watermark">
         <img
-            src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/siscoplagas/watermark.png'))) }}">
+            src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/zonda/watermark.png'))) }}">
     </div>
 
     <div class="row">
@@ -318,7 +318,7 @@
             <h1 style="font-size: 22px; margin: 0;">{{ $title }}</h1>
         </div>
         <div class="logo">
-            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/siscoplagas/landscape_logo.png'))) }} style="width:
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/zonda/landscape_logo.png'))) }} style="width:
                 150px; margin: 0;">
         </div>
     </div>

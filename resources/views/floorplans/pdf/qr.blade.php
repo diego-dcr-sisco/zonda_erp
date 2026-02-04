@@ -34,7 +34,7 @@
             vertical-align: top;
             position: relative;
 
-            background-image: url("file://{{ public_path('images/siscoplagas/trans_watermark.png') }}");
+            background-image: url("file://{{ public_path('images/zonda/trans_watermark.png') }}");
             background-repeat: no-repeat;
             background-position: center;
             background-size: 20%;
@@ -104,7 +104,7 @@
             <div class="card-content">
                 <div class="device-text">
                     <div class="logo">
-                        <img src="file://{{ public_path('images/siscoplagas/landscape_logo.png') }}" style="width:70%; margin: 0;">
+                        <img src="file://{{ public_path('images/zonda/landscape_logo.png') }}" style="width:70%; margin: 0;">
                     </div>
                     <div
                         style="font-size: 15px;

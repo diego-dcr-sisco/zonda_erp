@@ -175,7 +175,6 @@ class Certificate
 
     public function customer()
     {
-
         $this->data['customer'] = [
             'name' => $this->order->customer->name ?? '-',
             'address' => $this->order->customer->address ?? '-',
