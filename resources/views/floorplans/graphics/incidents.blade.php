@@ -151,6 +151,65 @@
                 </div>
             </div>
         </div>
+
+        <div class="row m-3">
+            <div class="col-12">
+                <div class="border rounded shadow p-3">
+                    <div class="mb-3">
+                        <h4 class="fw-bold">Tendencia de incidencias mensuales</h4>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-3">
+                            <label for="floorplan-name" class="form-label">Plano </label>
+                            <input type="text" class="form-control form-control-sm" id="floorplan-name"
+                                value="{{ $floorplan->filename }}" disabled>
+                        </div>
+
+                        <div class="col-3">
+                            <label for="floorplan-name" class="form-label">Servicio </label>
+                            <input type="text" class="form-control form-control-sm" id="floorplan-name"
+                                value="{{ $floorplan->service->name ?? 'No aplica' }}" disabled>
+                        </div>
+
+                        <div class="col-2">
+                            <label for="floorplan-name" class="form-label is-required">Version</label>
+                            <select class="form-select form-select-sm filter-select" id="floorplan-version-trend" name="version">
+                                @forelse ($floorplan->versions as $version)
+                                    <option value="{{ $version->version }}"
+                                        @if ($version->version == $floorplan->version) selected @endif>
+                                        {{ $version->version }}</option>
+                                @empty
+                                    <option value="" selected>Sin version</option>
+                                @endforelse
+                            </select>
+                        </div>
+
+                        <div class="col-4">
+                            <label for="floorplan-name" class="form-label is-required">Año</label>
+                            <select class="form-select form-select-sm filter-select" id="floorplan-year-trend" name="year">
+                                @forelse ($years as $year)
+                                    <option value="{{ $year }}"
+                                        @if ($year == Carbon\Carbon::now()->year) selected @endif>
+                                        {{ $year }}</option>
+                                @empty
+                                    <option value="" selected>Sin año</option>
+                                @endforelse
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-primary btn-sm" id="search-trend-btn">Buscar</button>
+                    </div>
+
+                    <div class="position-relative">
+                        <div id="trend-loader" class="spinner-border spinner-border-sm position-absolute" style="display:none; top: 10px; right: 10px;" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -159,6 +218,7 @@
     <script>
         let devicesChart = null;
         let pestsChart = null;
+        let trendChart = null;
         const floorplanId = document.getElementById('floorplan-id').value;
 
         // Función para cargar los datos de incidentes vía AJAX
@@ -182,6 +242,31 @@
             } catch (error) {
                 console.error('Error al cargar datos:', error);
                 alert('Error al cargar los datos del gráfico');
+                return null;
+            }
+        }
+
+        // Función para cargar datos de tendencia (todos los meses del año)
+        async function fetchTrendData(version, year) {
+            try {
+                const response = await fetch(`{{ route('floorplan.graphic.incidents', $floorplan->id) }}?version=${version}&year=${year}&trend=true`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud');
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error al cargar datos de tendencia:', error);
+                alert('Error al cargar los datos de tendencia');
                 return null;
             }
         }
@@ -256,10 +341,58 @@
             });
         }
 
+        // Función para actualizar el gráfico de tendencia
+        function updateTrendChart(labels, data) {
+            const ctx_t = document.getElementById('trendChart').getContext('2d');
+
+            if (trendChart) {
+                trendChart.destroy();
+            }
+
+            trendChart = new Chart(ctx_t, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total de incidentes por mes',
+                        data: data,
+                        borderColor: 'rgba(75, 192, 75)',
+                        backgroundColor: 'rgba(75, 192, 75, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 5,
+                        pointBackgroundColor: 'rgba(75, 192, 75)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+
         // Inicializar gráficos con datos iniciales
         function initializeCharts() {
             updateDevicesChart({!! json_encode($graph_per_devices['labels']) !!}, {!! json_encode($graph_per_devices['data']) !!});
             updatePestsChart({!! json_encode($graph_per_pests['labels']) !!}, {!! json_encode($graph_per_pests['data']) !!});
+            updateTrendChart({!! json_encode($graph_per_months['labels']) !!}, {!! json_encode($graph_per_months['data']) !!});
         }
 
         // Event listeners para los botones de búsqueda
@@ -301,6 +434,25 @@
             }
 
             document.getElementById('pests-loader').style.display = 'none';
+        });
+
+        document.getElementById('search-trend-btn').addEventListener('click', async function() {
+            const version = document.getElementById('floorplan-version-trend').value;
+            const year = document.getElementById('floorplan-year-trend').value;
+
+            if (!version || !year) {
+                alert('Por favor, complete todos los filtros');
+                return;
+            }
+
+            document.getElementById('trend-loader').style.display = 'block';
+
+            const graphData = await fetchTrendData(version, year);
+            if (graphData && graphData.success) {
+                updateTrendChart(graphData.trend.labels, graphData.trend.data);
+            }
+
+            document.getElementById('trend-loader').style.display = 'none';
         });
 
         // Inicializar al cargar la página

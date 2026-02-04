@@ -901,6 +901,7 @@ class FloorPlansController extends Controller
         $version = intval($request->input('version'));
         $month = intval($request->input('month'));
         $year = intval($request->input('year'));
+        $trend = $request->input('trend');
 
         if (empty($version)) {
             $version = $floorplan->versions()->latest('version')->value('version');
@@ -920,6 +921,15 @@ class FloorPlansController extends Controller
                 ->where('version', $version)
                 ->orderBy('nplan')
                 ->get();
+
+            if ($trend) {
+                // Obtener datos de tendencia para todos los meses del año
+                $graph_per_months = $this->graphIncidentsByMonth($devices, $year);
+                return response()->json([
+                    'success' => true,
+                    'trend' => $graph_per_months
+                ]);
+            }
 
             $orders = Order::whereMonth('programmed_date', $month)
                 ->whereYear('programmed_date', $year)
@@ -950,11 +960,12 @@ class FloorPlansController extends Controller
 
         $graph_per_devices = $this->graphIncidentsByDevice($devices, $orders);
         $graph_per_pests = $this->graphIncidentsByPests($devices, $orders);
+        $graph_per_months = $this->graphIncidentsByMonth($devices, $year);
 
         $months = $this->months;
         $years = $this->getYears();
 
-        return view('floorplans.graphics.incidents', compact('devices', 'floorplan', 'version', 'navigation', 'months', 'years', 'graph_per_devices', 'graph_per_pests'));
+        return view('floorplans.graphics.incidents', compact('devices', 'floorplan', 'version', 'navigation', 'months', 'years', 'graph_per_devices', 'graph_per_pests', 'graph_per_months'));
     }
 
     private function graphIncidentsByDevice($devices, $orders)
@@ -1014,5 +1025,34 @@ class FloorPlansController extends Controller
 
         $years = range($startYear, $currentYear);
         return $years;
+    }
+
+    private function graphIncidentsByMonth($devices, $year)
+    {
+        $labels = [];
+        $data = [];
+
+        // Iterar sobre los 12 meses del año
+        for ($month = 1; $month <= 12; $month++) {
+            $labels[] = $this->months[$month];
+
+            // Obtener órdenes del mes y año especificado
+            $orders = Order::whereMonth('programmed_date', $month)
+                ->whereYear('programmed_date', $year)
+                ->whereIn('id', DevicePest::whereIn('device_id', $devices->pluck('id'))->pluck('order_id')->unique())
+                ->get();
+
+            // Sumar todas las incidencias de plagas en ese mes
+            $total_incidents = DevicePest::whereIn('device_id', $devices->pluck('id'))
+                ->whereIn('order_id', $orders->pluck('id'))
+                ->sum('total');
+
+            $data[] = $total_incidents;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
     }
 }
