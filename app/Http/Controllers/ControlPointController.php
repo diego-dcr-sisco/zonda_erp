@@ -255,7 +255,7 @@ class ControlPointController extends Controller
                 'route' => route('floorplan.qr', ['id' => $floorplan_id]),
                 'permission' => null
             ],
-            'Geolocalización' => ['route' => route('floorplan.geolocation', ['id' => $floorplan_id]), 'permission' => null],
+            //'Geolocalización' => ['route' => route('floorplan.geolocation', ['id' => $floorplan_id]), 'permission' => null],
             'Áreas de aplicación' => ['route' => route('customer.show.sede.areas', ['id' => $floorplan->customer_id]), 'permission' => null]
         ];
 

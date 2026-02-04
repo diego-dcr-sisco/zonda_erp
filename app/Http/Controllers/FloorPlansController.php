@@ -22,8 +22,8 @@ use App\Models\ApplicationMethodService;
 use App\Models\ApplicationArea;
 use App\Models\ProductPest;
 use App\Models\FloorplanVersion;
-use App\Models\OrderInsidences;
-use App\Models\Branch;
+use App\Models\PestCatalog;
+use App\Models\Order;
 use App\Models\OrderName;
 
 use Illuminate\Support\Str;
@@ -35,12 +35,29 @@ use Intervention\Image\Facades\Image;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\PDF\QRDevice;
 use App\Jobs\CleanTempFiles;
-
+use App\Models\DevicePest;
 
 class FloorPlansController extends Controller
 {
     private $path = 'floorplans/';
     private $size = 25;
+
+    private $months = [
+        1 => 'Enero',
+        2 => 'Febrero',
+        3 => 'Marzo',
+        4 => 'Abril',
+        5 => 'Mayo',
+        6 => 'Junio',
+        7 => 'Julio',
+        8 => 'Agosto',
+        9 => 'Septiembre',
+        10 => 'Octubre',
+        11 => 'Noviembre',
+        12 => 'Diciembre'
+    ];
+
+
 
     private function countControlPoints($nestedDevices)
     {
@@ -72,12 +89,16 @@ class FloorPlansController extends Controller
                 'route' => route('floorplan.qr', ['id' => $floorplan->id]),
                 'permission' => 'handle_floorplans'
             ],
-            'Geolocalización' => [
-                'route' => route('floorplan.devices', ['id' => $floorplan->id]),
+            /*'Geolocalización' => [
+                'route' => route('floorplan.geolocation', ['id' => $floorplan->id]),
                 'permission' => 'handle_floorplans'
-            ],
+            ],*/
             'Áreas de aplicación' => [
                 'route' => route('customer.show.sede.areas', ['id' => $floorplan->customer_id]),
+                'permission' => 'handle_floorplans'
+            ],
+            'Graficas' => [
+                'route' => route('floorplan.graphic.incidents', ['id' => $floorplan->id]),
                 'permission' => 'handle_floorplans'
             ],
         ];
@@ -641,7 +662,7 @@ class FloorPlansController extends Controller
     public function update(Request $request, string $id)
     {
         $floorplan = FloorPlans::find($id);
-        
+
         $validated = $request->validate([
             'filename' => [
                 'required',
@@ -679,11 +700,11 @@ class FloorPlansController extends Controller
             $extension = $file->getClientOriginalExtension();
             $safeFileName = Str::slug($floorplan->filename) . '_' . time() . '.' . $extension;
             $newPath = $this->path . $floorplan->customer_id . '/' . $safeFileName;
-            
+
             Storage::disk('public')->put($newPath, file_get_contents($file));
             $floorplan->path = $newPath;
         }
-        
+
         $floorplan->save();
 
         return back()->with('success', 'Plano actualizado exitosamente');
@@ -866,11 +887,132 @@ class FloorPlansController extends Controller
         $sanitized = preg_replace('/[<>:"\/\\|?*\x00-\x1f]/', '', $filename);
         $sanitized = preg_replace('/\s+/', ' ', $sanitized);
         $sanitized = trim($sanitized);
-        
+
         if (empty($sanitized)) {
             $sanitized = 'Plano_' . time();
         }
-        
+
         return $sanitized;
+    }
+
+    public function graphicIncidents(Request $request, string $id)
+    {
+        $floorplan = FloorPlans::find($id);
+        $version = intval($request->input('version'));
+        $month = intval($request->input('month'));
+        $year = intval($request->input('year'));
+
+        if (empty($version)) {
+            $version = $floorplan->versions()->latest('version')->value('version');
+        }
+
+        if (empty($month)) {
+            $month = Carbon::now()->month;
+        }
+
+        if (empty($year)) {
+            $year = Carbon::now()->year;
+        }
+
+        // Si la solicitud es AJAX, devolver JSON
+        if ($request->ajax()) {
+            $devices = Device::where('floorplan_id', $id)
+                ->where('version', $version)
+                ->orderBy('nplan')
+                ->get();
+
+            $orders = Order::whereMonth('programmed_date', $month)
+                ->whereYear('programmed_date', $year)
+                ->whereIn('id', DevicePest::whereIn('device_id', $devices->pluck('id'))->pluck('order_id')->unique())
+                ->get();
+
+            $graph_per_devices = $this->graphIncidentsByDevice($devices, $orders);
+            $graph_per_pests = $this->graphIncidentsByPests($devices, $orders);
+
+            return response()->json([
+                'success' => true,
+                'devices' => $graph_per_devices,
+                'pests' => $graph_per_pests
+            ]);
+        }
+
+        $navigation = $this->getNavigation($floorplan);
+
+        $devices = Device::where('floorplan_id', $id)
+            ->where('version', $version)
+            ->orderBy('nplan')
+            ->get();
+
+        $orders = Order::whereMonth('programmed_date', $month)
+            ->whereYear('programmed_date', $year)
+            ->whereIn('id', DevicePest::whereIn('device_id', $devices->pluck('id'))->pluck('order_id')->unique())
+            ->get();
+
+        $graph_per_devices = $this->graphIncidentsByDevice($devices, $orders);
+        $graph_per_pests = $this->graphIncidentsByPests($devices, $orders);
+
+        $months = $this->months;
+        $years = $this->getYears();
+
+        return view('floorplans.graphics.incidents', compact('devices', 'floorplan', 'version', 'navigation', 'months', 'years', 'graph_per_devices', 'graph_per_pests'));
+    }
+
+    private function graphIncidentsByDevice($devices, $orders)
+    {
+        $labels = [];
+        $data = [];
+
+        foreach ($devices as $device) {
+            $incident_per_device = DevicePest::where('device_id', $device->id)
+                ->whereIn('order_id', $orders->pluck('id'))
+                ->get();
+            $count = $incident_per_device->sum('total');
+
+            if ($count > 0) {
+                $labels[] = $device->code;
+                $data[] = $count;
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function graphIncidentsByPests($devices, $orders)
+    {
+        $labels = [];
+        $data = [];
+
+        $pests = PestCatalog::whereIn('id', DevicePest::whereIn('device_id', $devices->pluck('id'))->pluck('pest_id')->unique())->get();
+        $labels = $pests->pluck('name');
+        $pest_keys = $pests->select('id')->toArray();
+
+        foreach ($pest_keys as $pk) {
+            $pest_per_devices = DevicePest::whereIn('device_id', $devices->pluck('id'))
+                ->where('pest_id', $pk['id'])
+                ->whereIn('order_id', $orders->pluck('id'))
+                ->get();
+            $count = $pest_per_devices->sum('total');
+            $data[] = $count;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function getYears()
+    {
+        $startYear = Order::selectRaw('YEAR(MIN(programmed_date)) as year')
+            ->whereNotNull('programmed_date')
+            ->value('year');
+
+        $currentYear = Carbon::now()->year;
+
+        $years = range($startYear, $currentYear);
+        return $years;
     }
 }

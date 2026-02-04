@@ -638,9 +638,9 @@ class ReportController extends Controller
         $recommendations = $this->recommendations;
 
         $navigation = [
-            'Orden de servicio' => route('order.edit', ['id' => $order->id]),
-            'Reporte' => route('report.review', ['id' => $order->id]),
-            'Seguimientos' => route('tracking.create.order', ['id' => $order->id]),
+            'Orden de servicio' => ['route' => route('order.edit', ['id' => $order->id]), 'permission' => null],
+            'Reporte' => ['route' => route('report.review', ['id' => $order->id]), 'permission' => null],
+            'Seguimientos' => ['route' => route('tracking.create.order', ['id' => $order->id]), 'permission' => null],
         ];
 
         $devices_products = DeviceProduct::where('order_id', $order->id)->get();
