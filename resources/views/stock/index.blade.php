@@ -25,11 +25,11 @@
             </span>
         </div>
         <div class="d-flex flex-row justify-content-between align-items-center py-3">
-            @can(tenant_can('handle_stock'))
+            @if(tenant_can('handle_stock'))
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
                     <i class="bi bi-plus-lg fw-bold"></i> Crear almacén
                 </button>
-            @endcan
+            @endif
             <div class="col-md-6 col-lg-4">
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon1"><i class="bi bi-search"></i></span>

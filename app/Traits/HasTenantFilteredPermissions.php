@@ -21,21 +21,59 @@ trait HasTenantFilteredPermissions
         ]);
         $permissionFilter = app(TenantPermissionFilter::class);
         
+        $currentTenantId = TenantManager::getCurrentTenantId();
         
         // Si no hay tenant activo, usar comportamiento normal de Spatie
-        if (!TenantManager::getCurrentTenantId()) {
+        if (!$currentTenantId) {
+            Log::info('Sin tenant activo, usando comportamiento normal de Spatie', [
+                'usuario_id' => $this->id,
+                'permission' => $permission,
+            ]);
             return $this->hasPermissionTo($permission, $guardName);
         }
+        
+        Log::info('Tenant activo detectado', [
+            'usuario_id' => $this->id,
+            'tenant_id' => $currentTenantId,
+            'permission' => $permission,
+        ]);
         
         // Primero verificar si el permiso está permitido para el tenant
         $permissionName = $this->getPermissionName($permission, $guardName);
         
+        Log::info('Nombre de permiso obtenido', [
+            'usuario_id' => $this->id,
+            'permission' => $permission,
+            'permission_name' => $permissionName,
+            'tenant_id' => $currentTenantId,
+        ]);
+        
         if ($permissionName && !$permissionFilter->isPermissionAllowedForCurrentTenant($permissionName)) {
+            Log::warning('Permiso denegado para el tenant', [
+                'usuario_id' => $this->id,
+                'permission_name' => $permissionName,
+                'tenant_id' => $currentTenantId,
+            ]);
             return false;
         }
         
+        Log::info('Permiso permitido, verificando con Spatie', [
+            'usuario_id' => $this->id,
+            'permission_name' => $permissionName,
+            'tenant_id' => $currentTenantId,
+        ]);
+        
         // Si está permitido, usar la lógica normal de Spatie
-        return $this->hasPermissionTo($permission, $guardName);
+        $hasPermission = $this->hasPermissionTo($permission, $guardName);
+        
+        Log::info('Resultado de verificación de permiso Spatie', [
+            'usuario_id' => $this->id,
+            'permission' => $permission,
+            'tenant_id' => $currentTenantId,
+            'has_permission' => $hasPermission,
+        ]);
+        
+        return $hasPermission;
     }
 
     /**

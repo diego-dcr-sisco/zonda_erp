@@ -9,7 +9,7 @@ use App\Tenancy\TenantManager;
 if (!function_exists('tenant_can')) {
     function tenant_can($permission)
     {
-        if (!auth()->check()) {
+        if (!auth()->check()) { 
             return false;
         }
         
