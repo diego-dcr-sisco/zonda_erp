@@ -154,7 +154,6 @@ class ContractController extends Controller
         $configurations = json_decode($request->input('configurations'));
         $selected_technicians = json_decode($request->input('technicians'));
 
-        dd($configurations, $selected_technicians);
 
         $start_date = $request->input('startdate');
         $end_date = $request->input('enddate');
