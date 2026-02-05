@@ -343,6 +343,9 @@
         configCounter++;
         const configId = configCounter;
 
+        const service_value = $('#service-id').val();
+        console.log('Adding configuration for service ID:', service_value);
+
         // Inicializar array de fechas y órdenes para esta configuración
         configDates[configId] = [];
 
@@ -470,7 +473,9 @@
                 <!-- Editor de texto enriquecido para descripción -->
                 <div class="mb-3">
                     <label class="form-label">Descripción del servicio</label>
-                    <div id="config-summernote${configId}" class="summernote"></div>
+                    <div id="config-summernote${configId}" class="summernote">
+
+                    </div>
                     <div class="form-text">
                         Describe los detalles específicos de esta configuración del servicio.
                     </div>
