@@ -1055,4 +1055,80 @@ class FloorPlansController extends Controller
             'data' => $data
         ];
     }
+
+    /**
+     * Estadísticas por dispositivo individual (plagas y tendencia mensual)
+     */
+    public function deviceStats(Request $request, string $floorplanId, string $deviceId)
+    {
+        $floorplan = FloorPlans::findOrFail($floorplanId);
+        $device = Device::findOrFail($deviceId);
+
+        if ($device->floorplan_id != $floorplan->id) {
+            abort(404);
+        }
+
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+        $trend = $request->input('trend', false);
+
+        // Órdenes relevantes para el mes/año
+        $orders = Order::whereMonth('programmed_date', $month)
+            ->whereYear('programmed_date', $year)
+            ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+            ->get();
+
+        // Gráfica por plagas (labels y data)
+        $pests = PestCatalog::whereIn('id', DevicePest::where('device_id', $device->id)->pluck('pest_id')->unique())->get();
+        $labels_pests = $pests->pluck('name');
+        $data_pests = [];
+        foreach ($pests->pluck('id') as $pid) {
+            $count = DevicePest::where('device_id', $device->id)
+                ->where('pest_id', $pid)
+                ->whereIn('order_id', $orders->pluck('id'))
+                ->sum('total');
+            $data_pests[] = $count;
+        }
+
+        // Gráfica por meses (tendencia) para el año seleccionado
+        $labels_months = [];
+        $data_months = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $labels_months[] = $this->months[$m];
+            $orders_month = Order::whereMonth('programmed_date', $m)
+                ->whereYear('programmed_date', $year)
+                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->get();
+
+            $total_incidents = DevicePest::where('device_id', $device->id)
+                ->whereIn('order_id', $orders_month->pluck('id'))
+                ->sum('total');
+
+            $data_months[] = $total_incidents;
+        }
+
+        $graph_per_pests = ['labels' => $labels_pests, 'data' => $data_pests];
+        $graph_per_months = ['labels' => $labels_months, 'data' => $data_months];
+
+        // Últimas 10 revisiones (order_incidents) para este dispositivo
+        $reviews = OrderIncidents::where('device_id', $device->id)
+            ->with('question')
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        if ($request->wantsJson() || $trend) {
+            return response()->json([
+                'success' => true,
+                'pests' => $graph_per_pests,
+                'trend' => $graph_per_months
+            ]);
+        }
+
+        $navigation = $this->getNavigation($floorplan);
+        $months = $this->months;
+        $years = $this->getYears();
+
+        return view('floorplans.graphics.device_stats', compact('device', 'floorplan', 'navigation', 'months', 'years', 'graph_per_pests', 'graph_per_months', 'reviews'));
+    }
 }

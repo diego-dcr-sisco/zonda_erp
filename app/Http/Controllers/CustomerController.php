@@ -485,10 +485,10 @@ class CustomerController extends Controller
                 'route' => route('customer.quote', ['id' => $customer->id, 'class' => 'customer']),
                 'permission' => 'handle_quotes'
             ],
-            'Graficas' => [
-                'route' => route('customer.graphics', ['id' => $customer->id]),
-                'permission' => null
-            ],
+            //'Graficas' => [
+            //    'route' => route('customer.graphics', ['id' => $customer->id]),
+            //    'permission' => null
+            //],
         ];
     }
 
