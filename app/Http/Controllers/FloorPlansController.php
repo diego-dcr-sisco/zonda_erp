@@ -1023,6 +1023,11 @@ class FloorPlansController extends Controller
 
         $currentYear = Carbon::now()->year;
 
+        // Si no hay datos, usar el año actual
+        if (!$startYear || $startYear > $currentYear) {
+            return [$currentYear];
+        }
+
         $years = range($startYear, $currentYear);
         return $years;
     }

@@ -76,12 +76,12 @@
                 <p class="card-text fw-bold">Agenda</p>
             </a>
 
-            <a href="{{ route('crm.chart.dashboard') }}"
+            {{-- <a href="{{ route('crm.chart.dashboard') }}"
                 class="d-flex flex-column align-items-center justify-content-center card shadow text-center text-white text-decoration-none p-2 m-2"
                 style="width: 8em; height: 8em; background-color: #1a237e;">
                 <i class="bi bi-bar-chart-fill fs-2"></i>
                 <p class="card-text fw-bold">Analiticas</p>
-            </a>
+            </a>--}}
             <a href="{{ route('crm.tracking') }}"
                 class="d-flex flex-column align-items-center justify-content-center card shadow text-center text-white text-decoration-none p-2 m-2"
                 style="width: 8em; height: 8em; background-color:#d32f2f;">

@@ -278,7 +278,7 @@ Route::prefix('lot')
         Route::get('/traceability/{id}', [LotController::class, 'getTraceability'])->name('traceability');
     });
 
-Route::prefix('CRM/chart')
+Route::prefix('crm/chart')
     ->middleware(['auth', 'single.session', 'can:integral'])
     ->name('crm.chart.')
     ->group(function () {
@@ -305,6 +305,14 @@ Route::prefix('CRM/chart')
         // Order Types
         Route::get('/ordertypes/{service_type}', [GraphicController::class, 'orderTypesDataset'])->name('ordertypes');
         Route::get('/ordertypes/{service_type}/update', [GraphicController::class, 'refreshOrderTypes'])->name('ordertypes.refresh');
+
+        // JSON endpoints for AJAX charts
+        Route::get('/customers-by-month', [GraphicController::class, 'customersByMonthJson'])->name('customersByMonthJson');
+        Route::get('/leads-by-month', [GraphicController::class, 'leadsByMonthJson'])->name('leadsByMonthJson');
+        Route::get('/services-by-type', [GraphicController::class, 'servicesByTypeJson'])->name('servicesByTypeJson');
+        Route::get('/services-programmed', [GraphicController::class, 'servicesProgrammedJson'])->name('servicesProgrammedJson');
+        Route::get('/trackings-by-month', [GraphicController::class, 'trackingsByMonthJson'])->name('trackingsByMonthJson');
+        Route::get('/pests-by-customer', [GraphicController::class, 'pestsByCustomerJson'])->name('pestsByCustomerJson');
 
         // views
         Route::get('/dashboard', [GraphicController::class, 'index'])->name('dashboard');

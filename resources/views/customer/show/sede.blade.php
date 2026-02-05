@@ -118,11 +118,11 @@
                                             data-bs-title="Cotizaciones">
                                             <i class="bi bi-calculator-fill"></i>
                                         </a>
-                                        <a href="{{ route('customer.graphics', ['id' => $sede->id]) }}"
+                                        {{-- <a href="{{ route('customer.graphics', ['id' => $sede->id]) }}"
                                             class="btn btn-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                                             data-bs-title="Graficas">
                                             <i class="bi bi-bar-chart-fill"></i>
-                                        </a>
+                                        </a>--}}
 
                                         <a href="{{ route('customer.edit.sede', ['id' => $sede->id]) }}"
                                             class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
