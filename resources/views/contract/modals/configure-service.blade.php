@@ -344,8 +344,15 @@
         const configId = configCounter;
 
         const config_service_id = $('#service-id').val();
-        console.log('Adding configuration for service ID:', config_service_id);
-        console.log(selected_services);
+        var config_service_description = '';
+        
+        if(config_service_id) {
+            selected_services.forEach(function(service) {
+                if(service.id == config_service_id) {
+                    config_service_description = service.description || '';
+                }
+            });
+        }
 
         // Inicializar array de fechas y órdenes para esta configuración
         configDates[configId] = [];
@@ -475,7 +482,7 @@
                 <div class="mb-3">
                     <label class="form-label">Descripción del servicio</label>
                     <div id="config-summernote${configId}" class="summernote">
-
+                        ${config_service_description}
                     </div>
                     <div class="form-text">
                         Describe los detalles específicos de esta configuración del servicio.
