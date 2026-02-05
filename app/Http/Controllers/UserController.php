@@ -88,7 +88,7 @@ class UserController extends Controller
 		$users = User::whereNot('role_id', 4)->orderBy('name')->paginate($this->size);
 		$roles = SimpleRole::where('id', '!=', 4)->get();
 		$wk_depts = WorkDepartment::where('id', '!=', 1)->get();
-		$types = ['Usuario Interno', 'Usuario Usuario Cliente'];
+		$types = ['Usuario Interno', 'Usuario Cliente'];
 
 		$navigation = [
 			'Usuarios' => ['route' => route('user.index'), 'permission' => null],
@@ -125,7 +125,7 @@ class UserController extends Controller
 					'route' => route('user.create'),
 					'permission' => null
 				],
-				'Usuario Usuario Cliente' => [
+				'Usuario Cliente' => [
 					'route' => route('user.create.client'),
 					'permission' => null
 				]
@@ -133,7 +133,7 @@ class UserController extends Controller
 		} else {
 			$view = 'user.create.client';
 			$navigation = [
-				'Usuario Usuario Cliente' => [
+				'Usuario Cliente' => [
 					'route' => route('user.create.client'),
 					'permission' => null
 				]
