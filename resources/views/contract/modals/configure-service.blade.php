@@ -495,6 +495,11 @@
 
         initializeSummernote(configId);
 
+        if (config_service_description) {
+            configDescriptions[configId] = config_service_description;
+            $(`#config-summernote${configId}`).summernote('code', config_service_description);
+        }
+
         // Configurar execution_frequency_ideventos con jQuery
         $(`#service-frequency-${configId}`).on("change", function() {
             handleFrequencyChange(configId);
