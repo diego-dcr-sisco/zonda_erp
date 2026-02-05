@@ -343,8 +343,9 @@
         configCounter++;
         const configId = configCounter;
 
-        const service_value = $('#service-id').val();
-        console.log('Adding configuration for service ID:', service_value);
+        const config_service_id = $('#service-id').val();
+        console.log('Adding configuration for service ID:', config_service_id);
+        console.log(selected_services);
 
         // Inicializar array de fechas y órdenes para esta configuración
         configDates[configId] = [];
