@@ -108,6 +108,7 @@ class UserController extends Controller
 	public function create(): View
 	{
 		$disk = $this->disk;
+		dd($this->path);
 		$local_dirs = $disk->directories($this->path);
 		sort($local_dirs);
 
