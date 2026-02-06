@@ -43,7 +43,7 @@ class UserController extends Controller
 
 	public function __construct()
 	{
-		$this->disk = Storage::disk('public');
+		$this->disk = Storage::disk('google');
 	}
 
 	public static function verifyData($user, $hasContract)
