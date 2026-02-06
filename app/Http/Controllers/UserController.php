@@ -110,6 +110,8 @@ class UserController extends Controller
 		$disk = $this->disk;
 		$local_dirs = $disk->directories($this->path);
 		sort($local_dirs);
+
+		dd($local_dirs);
 		$statuses = Status::all();
 		$work_departments = WorkDepartment::where('id', '!=', 1)->get();
 		$roles = SimpleRole::whereNotIn('id', [4, 5])->get();
