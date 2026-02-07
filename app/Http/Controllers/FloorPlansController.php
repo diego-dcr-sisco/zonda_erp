@@ -1085,12 +1085,20 @@ class FloorPlansController extends Controller
         $month = $request->input('month', Carbon::now()->month);
         $year = $request->input('year', Carbon::now()->year);
         $trend = $request->input('trend', false);
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
-        // Órdenes relevantes para el mes/año
-        $orders = Order::whereMonth('programmed_date', $month)
-            ->whereYear('programmed_date', $year)
-            ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
-            ->get();
+        // Órdenes relevantes - usar rango de fechas si están disponibles, sino mes/año
+        if ($startDate && $endDate) {
+            $orders = Order::whereBetween('programmed_date', [$startDate, $endDate])
+                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->get();
+        } else {
+            $orders = Order::whereMonth('programmed_date', $month)
+                ->whereYear('programmed_date', $year)
+                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->get();
+        }
 
         // Gráfica por plagas (labels y data)
         $pests = PestCatalog::whereIn('id', DevicePest::where('device_id', $device->id)->pluck('pest_id')->unique())->get();

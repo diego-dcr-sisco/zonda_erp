@@ -57,28 +57,16 @@
                             <label class="form-label">Plano</label>
                             <input type="text" class="form-control form-control-sm" value="{{ $floorplan->filename }}" disabled>
                         </div>
-                        <div class="col-3">
-                            <label class="form-label">Mes</label>
-                            <select id="device-month" class="form-select form-select-sm">
-                                @foreach($months as $index => $m)
-                                    <option value="{{ $index }}" @if($index == \Carbon\Carbon::now()->month) selected @endif>{{ $m }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <label class="form-label">Año</label>
-                            <select id="device-year" class="form-select form-select-sm">
-                                @foreach($years as $y)
-                                    <option value="{{ $y }}" @if($y == \Carbon\Carbon::now()->year) selected @endif>{{ $y }}</option>
-                                @endforeach
-                            </select>
+                        <div class="col-6">
+                            <label class="form-label">Rango de Fechas</label>
+                            <input type="text" id="device-date-range" class="form-control form-control-sm" placeholder="Seleccionar rango">
                         </div>
                         <div class="col-3 d-flex align-items-end">
                             <button id="search-device-pests" class="btn btn-primary btn-sm">Buscar</button>
                         </div>
                     </div>
 
-                    <div class="position-relative">
+                    <div class="position-relative w-100">
                         <div id="pests-loader" class="spinner-border spinner-border-sm position-absolute" style="display:none; top: 10px; right: 10px;" role="status">
                             <span class="visually-hidden">Cargando...</span>
                         </div>
@@ -89,7 +77,7 @@
 
             <div class="col-lg-6 col-12">
                 <div class="border rounded shadow p-3">
-                    <h5 class="fw-bold">Tendencia mensual - {{ $device->code ?? 'Dispositivo' }}</h5>
+                    <h5 class="fw-bold">Tendencia Anual - {{ $device->code ?? 'Dispositivo' }}</h5>
 
                     <div class="row g-3 mb-3">
                         <div class="col-3">
@@ -105,7 +93,7 @@
                         </div>
                     </div>
 
-                    <div class="position-relative">
+                    <div class="position-relative w-100">
                         <div id="trend-loader" class="spinner-border spinner-border-sm position-absolute" style="display:none; top: 10px; right: 10px;" role="status">
                             <span class="visually-hidden">Cargando...</span>
                         </div>
@@ -116,6 +104,9 @@
         </div>
     </div>
 
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const deviceId = {{ $device->id }};
@@ -147,11 +138,64 @@
         document.addEventListener('DOMContentLoaded', function() {
             updatePestsChart({!! json_encode($graph_per_pests['labels']) !!}, {!! json_encode($graph_per_pests['data']) !!});
             updateTrendChart({!! json_encode($graph_per_months['labels']) !!}, {!! json_encode($graph_per_months['data']) !!});
+
+            // Inicializar daterangepicker
+            $('#device-date-range').daterangepicker({
+                opens: 'left',
+                locale: {
+                    format: 'DD/MM/YYYY',
+                    separator: ' - ',
+                    applyLabel: 'Aplicar',
+                    cancelLabel: 'Cancelar',
+                    fromLabel: 'Desde',
+                    toLabel: 'Hasta',
+                    customRangeLabel: 'Personalizado',
+                    weekLabel: 'S',
+                    daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'],
+                    monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+                    firstDay: 1
+                },
+                ranges: {
+                    'Hoy': [moment(), moment()],
+                    'Esta semana': [moment().startOf('week'), moment().endOf('week')],
+                    'Últimos 7 días': [moment().subtract(6, 'days'), moment()],
+                    'Este mes': [moment().startOf('month'), moment().endOf('month')],
+                    'Últimos 30 días': [moment().subtract(29, 'days'), moment()],
+                    'Este año': [moment().startOf('year'), moment().endOf('year')],
+                },
+                alwaysShowCalendars: true,
+                autoUpdateInput: false,
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month')
+            });
+
+            // Actualizar el input cuando se selecciona un rango
+            $('#device-date-range').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+
+            $('#device-date-range').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+            });
+
+            // Establecer valor inicial
+            $('#device-date-range').val(moment().startOf('month').format('DD/MM/YYYY') + ' - ' + moment().endOf('month').format('DD/MM/YYYY'));
         });
 
-        async function fetchDeviceData(month, year, trend = false) {
+        async function fetchDeviceDataByRange(startDate, endDate) {
             try {
-                const url = `{{ url('floorplans/devices') }}/${floorplanId}/device/${deviceId}/stats?month=${month}&year=${year}${trend? '&trend=1' : ''}`;
+                const url = `{{ url('floorplans/devices') }}/${floorplanId}/device/${deviceId}/stats?start_date=${startDate}&end_date=${endDate}`;
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+                return await res.json();
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
+        }
+
+        async function fetchDeviceDataByYear(year) {
+            try {
+                const url = `{{ url('floorplans/devices') }}/${floorplanId}/device/${deviceId}/stats?year=${year}&trend=1`;
                 const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
                 return await res.json();
             } catch (e) {
@@ -161,18 +205,44 @@
         }
 
         document.getElementById('search-device-pests').addEventListener('click', async function() {
-            const month = document.getElementById('device-month').value;
-            const year = document.getElementById('device-year').value;
+            const dateRange = $('#device-date-range').data('daterangepicker');
+            if (!dateRange || !dateRange.startDate || !dateRange.endDate) {
+                alert('Por favor seleccione un rango de fechas');
+                return;
+            }
+            const startDate = dateRange.startDate.format('YYYY-MM-DD');
+            const endDate = dateRange.endDate.format('YYYY-MM-DD');
+            
+            console.log('Buscando datos desde:', startDate, 'hasta:', endDate);
             document.getElementById('pests-loader').style.display = 'block';
-            const data = await fetchDeviceData(month, year, false);
-            if (data && data.success) updatePestsChart(data.pests.labels, data.pests.data);
+            
+            const data = await fetchDeviceDataByRange(startDate, endDate);
+            console.log('Datos recibidos:', data);
+            
+            if (data) {
+                if (data.success && data.pests) {
+                    console.log('Actualizando gráfica con:', data.pests);
+                    updatePestsChart(data.pests.labels, data.pests.data);
+                } else if (data.graph_per_pests) {
+                    // Formato alternativo del backend
+                    console.log('Actualizando gráfica con formato alternativo:', data.graph_per_pests);
+                    updatePestsChart(data.graph_per_pests.labels, data.graph_per_pests.data);
+                } else {
+                    console.error('Formato de respuesta no reconocido:', data);
+                    alert('Error: formato de respuesta inesperado');
+                }
+            } else {
+                console.error('No se recibieron datos');
+                alert('Error al obtener los datos');
+            }
+            
             document.getElementById('pests-loader').style.display = 'none';
         });
 
         document.getElementById('search-device-trend').addEventListener('click', async function() {
             const year = document.getElementById('trend-year').value;
             document.getElementById('trend-loader').style.display = 'block';
-            const data = await fetchDeviceData(1, year, true);
+            const data = await fetchDeviceDataByYear(year);
             if (data && data.success) updateTrendChart(data.trend.labels, data.trend.data);
             document.getElementById('trend-loader').style.display = 'none';
         });

@@ -81,27 +81,35 @@
            ============================================ */
         
         .legend {
+            margin-top: 3mm;
             margin-bottom: 2mm;
             padding: 2mm;
             background-color: #f5f5f5; /* Fondo gris claro */
             border: 1px solid #ccc;
-            font-size: 10px; /* Texto muy pequeño para ahorrar espacio */
+            font-size: 10px;
+        }
+
+        .legend-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 1mm;
             text-align: center;
         }
 
-        .legend span {
-            display: inline-block; /* Permite margin horizontal */
-            margin: 0 3px; /* Separación entre servicios */
+        .legend-item {
+            display: block;
+            margin-bottom: 1mm;
+            padding: 0.5mm 0;
         }
 
         /* Cuadrito de color que representa cada servicio */
         .color-box {
             display: inline-block;
-            width: 5px;
-            height: 5px;
+            width: 8px;
+            height: 8px;
             border: 1px solid #999;
             vertical-align: middle; /* Alineación con el texto */
-            margin-right: 2px;
+            margin-right: 3px;
         }
 
         /* ============================================
@@ -243,61 +251,6 @@
     </div>
 
     <!-- ============================================
-         LEYENDA DE COLORES
-         Muestra cada color (día) con sus servicios asociados
-         ============================================ -->
-    <div class="legend">
-        @php
-            // Colores por día de la semana (índice numérico según Carbon)
-            $weekDayColorsArray = [
-                1 => '#FFC107',  // Lunes - Amarillo
-                2 => '#2196F3',  // Martes - Azul
-                3 => '#4CAF50',  // Miércoles - Verde
-                4 => '#FF5722',  // Jueves - Naranja
-                5 => '#9C27B0',  // Viernes - Morado
-                6 => '#FF9800',  // Sábado - Naranja claro
-                0 => '#F44336'   // Domingo - Rojo
-            ];
-            
-            // Analizar qué servicios se realizan en cada día de la semana
-            $colorServices = []; // [dayOfWeek => [array de service_ids]]
-            
-            foreach ($calendarData as $month => $days) {
-                foreach ($days as $day => $serviceIds) {
-                    // Obtener día de la semana para esta fecha
-                    $currentDate = \Carbon\Carbon::create($year, $month, $day);
-                    $dayOfWeek = $currentDate->dayOfWeek;
-                    
-                    if (!isset($colorServices[$dayOfWeek])) {
-                        $colorServices[$dayOfWeek] = [];
-                    }
-                    
-                    foreach ($serviceIds as $serviceId) {
-                        // Agregar servicio si no está ya en este día
-                        if (!in_array($serviceId, $colorServices[$dayOfWeek])) {
-                            $colorServices[$dayOfWeek][] = $serviceId;
-                        }
-                    }
-                }
-            }
-            
-            // Ordenar por día de la semana (lunes primero)
-            ksort($colorServices);
-        @endphp
-        
-        @foreach($colorServices as $dayOfWeek => $serviceIds)
-            <span>
-                <span class="color-box" style="background-color: {{ $weekDayColorsArray[$dayOfWeek] }}"></span>
-                <strong>
-                    @foreach($serviceIds as $index => $serviceId)
-                        {{ $serviceColors[$serviceId]['name'] }}{{ $index < count($serviceIds) - 1 ? ', ' : '' }}
-                    @endforeach
-                </strong>
-            </span>
-        @endforeach
-    </div>
-
-    <!-- ============================================
          CALENDARIOS MENSUALES
          Loop de 12 meses, cada uno como tabla
          ============================================ -->
@@ -404,6 +357,62 @@
         
         <!-- Limpiar floats después de todos los meses -->
         <div class="clearfix"></div>
+    </div>
+
+    <!-- ============================================
+         SIMBOLOGÍA
+         Muestra cada color (día) con sus servicios asociados
+         ============================================ -->
+    <div class="legend">
+        <div class="legend-title">SIMBOLOGÍA</div>
+        @php
+            // Colores por día de la semana (índice numérico según Carbon)
+            $weekDayColorsArray = [
+                1 => '#FFC107',  // Lunes - Amarillo
+                2 => '#2196F3',  // Martes - Azul
+                3 => '#4CAF50',  // Miércoles - Verde
+                4 => '#FF5722',  // Jueves - Naranja
+                5 => '#9C27B0',  // Viernes - Morado
+                6 => '#FF9800',  // Sábado - Naranja claro
+                0 => '#F44336'   // Domingo - Rojo
+            ];
+            
+            // Analizar qué servicios se realizan en cada día de la semana
+            $colorServices = []; // [dayOfWeek => [array de service_ids]]
+            
+            foreach ($calendarData as $month => $days) {
+                foreach ($days as $day => $serviceIds) {
+                    // Obtener día de la semana para esta fecha
+                    $currentDate = \Carbon\Carbon::create($year, $month, $day);
+                    $dayOfWeek = $currentDate->dayOfWeek;
+                    
+                    if (!isset($colorServices[$dayOfWeek])) {
+                        $colorServices[$dayOfWeek] = [];
+                    }
+                    
+                    foreach ($serviceIds as $serviceId) {
+                        // Agregar servicio si no está ya en este día
+                        if (!in_array($serviceId, $colorServices[$dayOfWeek])) {
+                            $colorServices[$dayOfWeek][] = $serviceId;
+                        }
+                    }
+                }
+            }
+            
+            // Ordenar por día de la semana (lunes primero)
+            ksort($colorServices);
+        @endphp
+        
+        @foreach($colorServices as $dayOfWeek => $serviceIds)
+            <div class="legend-item">
+                <span class="color-box" style="background-color: {{ $weekDayColorsArray[$dayOfWeek] }}"></span>
+                <strong>
+                    @foreach($serviceIds as $index => $serviceId)
+                        {{ $serviceColors[$serviceId]['name'] }}{{ $index < count($serviceIds) - 1 ? ', ' : '' }}
+                    @endforeach
+                </strong>
+            </div>
+        @endforeach
     </div>
 
     <!-- ============================================
