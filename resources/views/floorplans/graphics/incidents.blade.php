@@ -47,27 +47,8 @@
                         </div>
 
                         <div class="col-4">
-                            <label for="floorplan-name" class="form-label is-required">Mes/Año</label>
-                            <div class="input-group input-group-sm">
-                                <select class="form-select filter-select" id="floorplan-month-device" name="month">
-                                    @forelse ($months as $index => $month)
-                                        <option value="{{ $index }}"
-                                            @if ($index == Carbon\Carbon::now()->month) selected @endif>
-                                            {{ $month }}</option>
-                                    @empty
-                                        <option value="" selected>Sin version</option>
-                                    @endforelse
-                                </select>
-                                <select class="form-select form-select-sm filter-select" id="floorplan-year-device" name="year">
-                                    @forelse ($years as $year)
-                                        <option value="{{ $year }}"
-                                            @if ($year == Carbon\Carbon::now()->year) selected @endif>
-                                            {{ $year }}</option>
-                                    @empty
-                                        <option value="" selected>Sin año</option>
-                                    @endforelse
-                                </select>
-                            </div>
+                            <label for="floorplan-name" class="form-label is-required">Rango de fechas</label>
+                            <input type="text" class="form-control form-control-sm" id="date-range-device" name="daterange" placeholder="Seleccionar rango">
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mb-3">
@@ -115,27 +96,8 @@
                         </div>
 
                         <div class="col-4">
-                            <label for="floorplan-name" class="form-label is-required">Mes/Año</label>
-                            <div class="input-group input-group-sm">
-                                <select class="form-select filter-select" id="floorplan-month-pests" name="month">
-                                    @forelse ($months as $index => $month)
-                                        <option value="{{ $index }}"
-                                            @if ($index == Carbon\Carbon::now()->month) selected @endif>
-                                            {{ $month }}</option>
-                                    @empty
-                                        <option value="" selected>Sin version</option>
-                                    @endforelse
-                                </select>
-                                <select class="form-select form-select-sm filter-select" id="floorplan-year-pests" name="year">
-                                    @forelse ($years as $year)
-                                        <option value="{{ $year }}"
-                                            @if ($year == Carbon\Carbon::now()->year) selected @endif>
-                                            {{ $year }}</option>
-                                    @empty
-                                        <option value="" selected>Sin año</option>
-                                    @endforelse
-                                </select>
-                            </div>
+                            <label for="floorplan-name" class="form-label is-required">Rango de fechas</label>
+                            <input type="text" class="form-control form-control-sm" id="date-range-pests" name="daterange" placeholder="Seleccionar rango">
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mb-3">
@@ -214,12 +176,86 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css">
 
     <script>
         let devicesChart = null;
         let pestsChart = null;
         let trendChart = null;
         const floorplanId = document.getElementById('floorplan-id').value;
+
+        // Función para obtener instancia de daterangepicker
+        function getDateRangeData(elementId) {
+            return $(elementId).data('daterangepicker');
+        }
+
+        // Configuración común para los date range pickers
+        const commonOptions = {
+            opens: 'left',
+            locale: {
+                format: 'DD/MM/YYYY'
+            },
+            ranges: {
+                'Hoy': [moment(), moment()],
+                'Esta semana': [moment().startOf('week'), moment().endOf('week')],
+                'Últimos 7 días': [moment().subtract(6, 'days'), moment()],
+                'Este mes': [moment().startOf('month'), moment().endOf('month')],
+                'Últimos 30 días': [moment().subtract(29, 'days'), moment()],
+                'Este año': [moment().startOf('year'), moment().endOf('year')],
+            },
+            showDropdowns: true,
+            alwaysShowCalendars: true,
+            autoUpdateInput: false,
+            startDate: moment().startOf('month'),
+            endDate: moment().endOf('month')
+        };
+
+        // Inicializar date range picker para gráfico de dispositivos
+        $(document).ready(function() {
+            $('#date-range-device').daterangepicker(commonOptions);
+            $('#date-range-device').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+
+            // Inicializar date range picker para gráfico de plagas
+            $('#date-range-pests').daterangepicker(commonOptions);
+            $('#date-range-pests').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+
+            // Mostrar rango inicial
+            const initialText = moment().startOf('month').format('DD/MM/YYYY') + ' - ' + moment().endOf('month').format('DD/MM/YYYY');
+            $('#date-range-device').val(initialText);
+            $('#date-range-pests').val(initialText);
+        });
+
+        // Función para cargar los datos de incidentes vía AJAX con rango de fechas
+        async function fetchGraphDataByRange(version, startDate, endDate) {
+            try {
+                const response = await fetch(`{{ route('floorplan.graphic.incidents', $floorplan->id) }}?version=${version}&startDate=${startDate}&endDate=${endDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud');
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                alert('Error al cargar los datos del gráfico');
+                return null;
+            }
+        }
 
         // Función para cargar los datos de incidentes vía AJAX
         async function fetchGraphData(version, month, year) {
@@ -398,17 +434,24 @@
         // Event listeners para los botones de búsqueda
         document.getElementById('search-devices-btn').addEventListener('click', async function() {
             const version = document.getElementById('floorplan-version-device').value;
-            const month = document.getElementById('floorplan-month-device').value;
-            const year = document.getElementById('floorplan-year-device').value;
+            const dateRangeData = getDateRangeData('#date-range-device');
 
-            if (!version || !month || !year) {
-                alert('Por favor, complete todos los filtros');
+            if (!version) {
+                alert('Por favor, seleccione una versión');
                 return;
             }
 
+            if (!dateRangeData || !dateRangeData.startDate || !dateRangeData.endDate) {
+                alert('Por favor, seleccione un rango de fechas');
+                return;
+            }
+
+            const startDate = dateRangeData.startDate.format('YYYY-MM-DD');
+            const endDate = dateRangeData.endDate.format('YYYY-MM-DD');
+
             document.getElementById('devices-loader').style.display = 'block';
 
-            const graphData = await fetchGraphData(version, month, year);
+            const graphData = await fetchGraphDataByRange(version, startDate, endDate);
             if (graphData && graphData.success) {
                 updateDevicesChart(graphData.devices.labels, graphData.devices.data);
             }
@@ -418,17 +461,24 @@
 
         document.getElementById('search-pests-btn').addEventListener('click', async function() {
             const version = document.getElementById('floorplan-version-pests').value;
-            const month = document.getElementById('floorplan-month-pests').value;
-            const year = document.getElementById('floorplan-year-pests').value;
+            const dateRangeData = getDateRangeData('#date-range-pests');
 
-            if (!version || !month || !year) {
-                alert('Por favor, complete todos los filtros');
+            if (!version) {
+                alert('Por favor, seleccione una versión');
                 return;
             }
 
+            if (!dateRangeData || !dateRangeData.startDate || !dateRangeData.endDate) {
+                alert('Por favor, seleccione un rango de fechas');
+                return;
+            }
+
+            const startDate = dateRangeData.startDate.format('YYYY-MM-DD');
+            const endDate = dateRangeData.endDate.format('YYYY-MM-DD');
+
             document.getElementById('pests-loader').style.display = 'block';
 
-            const graphData = await fetchGraphData(version, month, year);
+            const graphData = await fetchGraphDataByRange(version, startDate, endDate);
             if (graphData && graphData.success) {
                 updatePestsChart(graphData.pests.labels, graphData.pests.data);
             }

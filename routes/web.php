@@ -804,6 +804,7 @@ Route::prefix('contracts')
         Route::get('/file/download/{id}', [ContractController::class, 'contract_downolad'])->name('file.download');
 
         Route::get('/renew/{id}', [ContractController::class, 'renew'])->name('renew');
+        Route::get('/calendar/pdf/{id}', [ContractController::class, 'annualCalendarPDF'])->name('calendar.pdf');
     });
 
 Route::prefix('opportunity-areas')

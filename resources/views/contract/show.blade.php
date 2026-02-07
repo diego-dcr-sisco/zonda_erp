@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
     @php
-        if (!function_exists('isPDF')) { 
+        if (!function_exists('isPDF')) {
             function isPDF($filePath)
             {
                 $extension = pathinfo($filePath, PATHINFO_EXTENSION);
@@ -32,7 +32,15 @@
             <a href="#" onclick="history.back(); return false;" class="col-auto btn-primary p-0 fs-3">
                 <i class="bi bi-arrow-left m-3"></i>
             </a>
-            <h1 class="col-auto fs-2 fw-bold m-0">{{ __('contract.title.show') }} {{ $contract->id }} [ {{ $contract->customer->name }} ] </h1>
+            <h1 class="col-auto fs-2 fw-bold m-0">{{ __('contract.title.show') }} {{ $contract->id }} [
+                {{ $contract->customer->name }} ] </h1>
+            <div class="col-auto ms-auto d-flex align-items-center gap-2">
+                <a href="{{ route('contract.calendar.pdf', $contract->id) }}" 
+                   class="btn btn-info btn-sm" 
+                   title="Descargar calendario anual">
+                    <i class="bi bi-bar-chart-fill"></i>
+                </a>
+            </div>
         </div>
         <div class="m-3">
             @include('messages.alert')

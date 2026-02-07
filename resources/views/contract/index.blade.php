@@ -34,7 +34,7 @@
             @endcan
         </div>
 
-        
+
         <div class="table-responsive">
             <table class="table table-sm table-bordered table-striped caption-top">
                 <caption class="border rounded-top p-2 text-dark bg-light">
@@ -124,8 +124,7 @@
                                     @php
                                         $results = compareDateWithToday($contract->enddate);
                                     @endphp
-                                    <span
-                                        class="fw-bold {{ $results[0] }}">
+                                    <span class="fw-bold {{ $results[0] }}">
                                         {{ $results[1] }}
                                     </span>
                                 </span>
@@ -156,6 +155,10 @@
                                         href="{{ route('quality.opportunity-area', ['id' => $contract->customer->id]) }}">
                                         <i class="bi bi-lightbulb-fill"></i>
                                     </a> --}}
+                                    <a href="{{ route('contract.calendar.pdf', $contract->id) }}" class="btn btn-dark btn-sm"
+                                        title="Calendario PDF">
+                                        <i class="bi bi-file-pdf-fill"></i>
+                                    </a>
                                     <a href="{{ route('contract.destroy', ['id' => $contract->id]) }}"
                                         class="btn btn-danger btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                                         title="Eliminar contrato"

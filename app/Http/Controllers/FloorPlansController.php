@@ -902,6 +902,8 @@ class FloorPlansController extends Controller
         $month = intval($request->input('month'));
         $year = intval($request->input('year'));
         $trend = $request->input('trend');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
 
         if (empty($version)) {
             $version = $floorplan->versions()->latest('version')->value('version');
@@ -931,10 +933,17 @@ class FloorPlansController extends Controller
                 ]);
             }
 
-            $orders = Order::whereMonth('programmed_date', $month)
-                ->whereYear('programmed_date', $year)
-                ->whereIn('id', DevicePest::whereIn('device_id', $devices->pluck('id'))->pluck('order_id')->unique())
-                ->get();
+            // Si se proporcionan fechas de rango, usarlas; de lo contrario, usar mes/año
+            if ($startDate && $endDate) {
+                $orders = Order::whereBetween('programmed_date', [$startDate, $endDate])
+                    ->whereIn('id', DevicePest::whereIn('device_id', $devices->pluck('id'))->pluck('order_id')->unique())
+                    ->get();
+            } else {
+                $orders = Order::whereMonth('programmed_date', $month)
+                    ->whereYear('programmed_date', $year)
+                    ->whereIn('id', DevicePest::whereIn('device_id', $devices->pluck('id'))->pluck('order_id')->unique())
+                    ->get();
+            }
 
             $graph_per_devices = $this->graphIncidentsByDevice($devices, $orders);
             $graph_per_pests = $this->graphIncidentsByPests($devices, $orders);
