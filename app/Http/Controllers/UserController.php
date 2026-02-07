@@ -113,6 +113,7 @@ class UserController extends Controller
 	public function create(): View
 	{
 		$auth_root = rtrim($this->getAuthUserPath(), '/');
+		dd($auth_root);
 		$path = $auth_root ? $auth_root . '/' . $this->path : $this->path;
 
 		$disk = $this->disk;
