@@ -33,9 +33,9 @@
                                 <a href="{{ route('client.system.index', ['path' => $link['path']]) }}">Inicio</a>
                             @else
                                 @if (count($links) != $i + 1)
-                                    <a href="{{ route('client.system.index', ['path' => $link['path']]) }}">{{ basename($link) }}</a>
+                                    <a href="{{ route('client.system.index', ['path' => $link['path']]) }}">{{ $link['name'] }}</a>
                                 @else
-                                    {{ basename($link['path']) }}
+                                    {{ $link['name'] }}
                                 @endif
                             @endif
                         </li>
