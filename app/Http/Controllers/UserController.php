@@ -46,6 +46,11 @@ class UserController extends Controller
 		$this->disk = Storage::disk('google');
 	}
 
+	private function getAuthUserPath()
+    {
+        return auth()->user()->getTenantPath();
+    }
+
 	public static function verifyData($user, $hasContract)
 	{
 		$user_data = $user->role_id == 3 ? Technician::where('user_id', $user->id)->first() : Administrative::where('user_id', $user->id)->first();
@@ -107,6 +112,9 @@ class UserController extends Controller
 
 	public function create(): View
 	{
+		$auth_root = rtrim($this->getAuthUserPath(), '/');
+		$path = $auth_root ? $auth_root . '/' . $this->path : $this->path;
+
 		$disk = $this->disk;
 		$local_dirs = $disk->directories($this->path);
 		sort($local_dirs);
