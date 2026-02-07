@@ -116,7 +116,7 @@ class UserController extends Controller
 		$path = $auth_root ? $auth_root . '/' . $this->path : $this->path;
 
 		$disk = $this->disk;
-		$local_dirs = $disk->directories($this->path);
+		$local_dirs = $disk->directories($path);
 		sort($local_dirs);
 
 		$statuses = Status::all();
