@@ -244,19 +244,57 @@
 
     <!-- ============================================
          LEYENDA DE COLORES
-         Muestra cada servicio con su color asignado
+         Muestra cada color (día) con sus servicios asociados
          ============================================ -->
     <div class="legend">
-        <!-- $serviceColors viene del controlador: array[service_id => ['name', 'color', 'hex']] -->
-        @forelse($serviceColors as $serviceId => $serviceInfo)
+        @php
+            // Colores por día de la semana (índice numérico según Carbon)
+            $weekDayColorsArray = [
+                1 => '#FFC107',  // Lunes - Amarillo
+                2 => '#2196F3',  // Martes - Azul
+                3 => '#4CAF50',  // Miércoles - Verde
+                4 => '#FF5722',  // Jueves - Naranja
+                5 => '#9C27B0',  // Viernes - Morado
+                6 => '#FF9800',  // Sábado - Naranja claro
+                0 => '#F44336'   // Domingo - Rojo
+            ];
+            
+            // Analizar qué servicios se realizan en cada día de la semana
+            $colorServices = []; // [dayOfWeek => [array de service_ids]]
+            
+            foreach ($calendarData as $month => $days) {
+                foreach ($days as $day => $serviceIds) {
+                    // Obtener día de la semana para esta fecha
+                    $currentDate = \Carbon\Carbon::create($year, $month, $day);
+                    $dayOfWeek = $currentDate->dayOfWeek;
+                    
+                    if (!isset($colorServices[$dayOfWeek])) {
+                        $colorServices[$dayOfWeek] = [];
+                    }
+                    
+                    foreach ($serviceIds as $serviceId) {
+                        // Agregar servicio si no está ya en este día
+                        if (!in_array($serviceId, $colorServices[$dayOfWeek])) {
+                            $colorServices[$dayOfWeek][] = $serviceId;
+                        }
+                    }
+                }
+            }
+            
+            // Ordenar por día de la semana (lunes primero)
+            ksort($colorServices);
+        @endphp
+        
+        @foreach($colorServices as $dayOfWeek => $serviceIds)
             <span>
-                <!-- Cuadrito coloreado según el servicio -->
-                <span class="color-box" style="background-color: {{ $serviceInfo['color'] }}"></span>
-                {{ $serviceInfo['name'] }}
+                <span class="color-box" style="background-color: {{ $weekDayColorsArray[$dayOfWeek] }}"></span>
+                <strong>
+                    @foreach($serviceIds as $index => $serviceId)
+                        {{ $serviceColors[$serviceId]['name'] }}{{ $index < count($serviceIds) - 1 ? ', ' : '' }}
+                    @endforeach
+                </strong>
             </span>
-        @empty
-            <span>No hay servicios asociados a este contrato</span>
-        @endforelse
+        @endforeach
     </div>
 
     <!-- ============================================
@@ -319,17 +357,29 @@
                             @elseif($day <= $daysInMonth)
                                 @php
                                     // Verificar si hay servicio programado este día
-                                    // $calendarData[mes][día] = [array de service_ids]
                                     $haService = isset($calendarData[$month][$day]);
                                     
-                                    // Obtener color del primer servicio del día (si hay)
-                                    $serviceColor = $haService 
-                                        ? $serviceColors[$calendarData[$month][$day][0]]['color'] 
-                                        : 'white';
+                                    // Obtener el día de la semana actual (0=domingo, 1=lunes, ..., 6=sábado)
+                                    $currentDate = \Carbon\Carbon::create($year, $month, $day);
+                                    $dayOfWeek = $currentDate->dayOfWeek;
+                                    
+                                    // Colores por día de la semana (mismo array que en leyenda)
+                                    $weekDayColors = [
+                                        1 => '#FFC107',  // Lunes - Amarillo
+                                        2 => '#2196F3',  // Martes - Azul
+                                        3 => '#4CAF50',  // Miércoles - Verde
+                                        4 => '#FF5722',  // Jueves - Naranja
+                                        5 => '#9C27B0',  // Viernes - Morado
+                                        6 => '#FF9800',  // Sábado - Naranja claro
+                                        0 => '#F44336'   // Domingo - Rojo
+                                    ];
+                                    
+                                    // Color según día de la semana si hay servicio
+                                    $cellColor = $haService ? $weekDayColors[$dayOfWeek] : 'white';
                                 @endphp
                                 
-                                <!-- Celda coloreada según servicio -->
-                                <td style="background-color: {{ $serviceColor }}; {{ $haService ? 'color: white;' : 'color: #000;' }}">
+                                <!-- Celda coloreada según día de la semana -->
+                                <td style="background-color: {{ $cellColor }}; {{ $haService ? 'color: white;' : 'color: #000;' }}">
                                     <span class="day-number">{{ $day }}</span>
                                 </td>
                                 
