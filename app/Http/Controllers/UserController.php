@@ -441,8 +441,12 @@ class UserController extends Controller
 			);
 		}
 
+		$auth_root = rtrim($this->getAuthUserPath(), '/');
+		$path = $auth_root ? $auth_root . '/' . $this->path : $this->path;
+
 		$disk = Storage::disk('google');
-		$local_dirs = $disk->directories($this->path);
+		
+		$local_dirs = $disk->directories($path);
 		sort($local_dirs);
 
 		$clients = $clients_data;
