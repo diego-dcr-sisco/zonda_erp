@@ -21,11 +21,11 @@
         <a href="{{ route('client.reports') }}" class="sidebar rounded-start py-2 pl-0">
             <i class="bi bi-file-earmark-pdf"></i> Reportes
         </a>
-        @can('write_system_client')
+        {{--@can('write_system_client')
         <a href="{{ route('client.mip.index', ['path' => 'mip_directory']) }}" class="sidebar rounded-start py-2 pl-0">
             <i class="bi bi-person-rolodex"></i> MIP
         </a>
-        @endcan
+        @endcan--}}
     </div>
 </div>
 

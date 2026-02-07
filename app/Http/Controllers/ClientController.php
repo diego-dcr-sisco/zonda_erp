@@ -244,6 +244,8 @@ class ClientController extends Controller
         $links = $this->getBreadcrumb($path);
         $user = User::find(Auth::user()->id);
 
+        dd($links);
+
         if ($disk->directoryExists($dir_name)) {
             $mip_dirs = $this->listDirectories($dir_name);
             $mip_files = $this->listFiles($dir_name);
