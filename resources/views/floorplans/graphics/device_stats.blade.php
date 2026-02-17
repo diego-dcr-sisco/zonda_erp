@@ -543,7 +543,7 @@
                 pdf.setFont(undefined, 'bold');
                 pdf.text('Tipo:', margin, currentY);
                 pdf.setFont(undefined, 'normal');
-                pdf.text('{{ $device->controlPoint->name ?? "N/A" }}', margin + 50, currentY);
+                pdf.text('{{ $device->controlPoint->name ?? "N/A" }}' + ' ({{ $device->controlPoint->code ?? "-" }})', margin + 50, currentY);
 
                 currentY += 12;
 
