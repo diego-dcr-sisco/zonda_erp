@@ -15,7 +15,12 @@
                 </select>
             </div>
         </h5>
-        <div id="leadsYearlyChartContainer">
+        <div id="leadsYearlyChartContainer" class="position-relative">
+            <div id="leadsSpinner" class="d-none" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
             <canvas id="leadsYearlyChart"></canvas>
         </div>
     </div>
@@ -27,12 +32,18 @@
     let leadsYear;
 
     function fetchLeadsData(year) {
+        const spinner = document.getElementById('leadsSpinner');
+        if (spinner) spinner.classList.remove('d-none');
+        
         fetch(`/crm/chart/leads-by-month?year=${year}`)
             .then(response => response.json())
             .then(data => {
                 renderLeadsChart(data);
             })
-            .catch(error => console.error('Error fetching leads data:', error));
+            .catch(error => {
+                console.error('Error fetching leads data:', error);
+                if (spinner) spinner.classList.add('d-none');
+            });
     }
 
     function renderLeadsChart(data) {
@@ -45,22 +56,22 @@
                 datasets: [{
                         label: 'Domésticos',
                         data: data.domestics,
-                        borderColor: '#039BE5',
-                        backgroundColor: 'rgba(3, 155, 229, 0.2)',
+                        borderColor: '#0A2986',
+                        backgroundColor: 'rgba(10, 41, 134, 0.2)',
                         fill: true
                     },
                     {
                         label: 'Comerciales',
                         data: data.comercials,
-                        borderColor: '#1A237E',
-                        backgroundColor: 'rgba(26, 35, 126, 0.2)',
+                        borderColor: '#512A87',
+                        backgroundColor: 'rgba(81, 42, 135, 0.2)',
                         fill: true
                     },
                     {
                         label: 'Industrial/Planta',
                         data: data.industrials,
-                        borderColor: '#4CAF50',
-                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        borderColor: '#DE523B',
+                        backgroundColor: 'rgba(222, 82, 59, 0.2)',
                         fill: true
                     }
                 ]
@@ -78,6 +89,9 @@
                 }
             }
         });
+
+        const spinner = document.getElementById('leadsSpinner');
+        if (spinner) spinner.classList.add('d-none');
     }
 
     leadsYear = document.getElementById('yearSelectorLeads').value;

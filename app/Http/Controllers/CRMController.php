@@ -179,6 +179,7 @@ class CRMController extends Controller
         $calendar_data = [];
         $navigation = $this->navigation;
         $initial_date = Carbon::today()->firstOfMonth()->format('Y-m-d');
+        $filter_action = $request->input('filter_action', 'orders') ?? 'orders';
 
         // Si no hay filtros aplicados, retornar vista vacía o con datos por defecto
         if (!$hasFilters) {
@@ -189,6 +190,7 @@ class CRMController extends Controller
                 'nav' => 'c',
                 'hasFilters' => false, // Puedes usar esto en tu vista
                 'initial_date' => $initial_date,
+                'filter_action' => $filter_action
             ]);
         }
 
@@ -197,61 +199,96 @@ class CRMController extends Controller
         $sort = $request->input('sort', 'id');
         $direction = $request->input('direction', 'DESC');
 
-        // Construir consulta base
-        $query = Order::query();
+        if ($filter_action == 'orders') {
 
-        // Aplicar filtros (mantén tus filtros existentes)
-        if ($request->filled('folio')) {
-            $query->where('folio', 'like', '%' . $request->input('folio') . '%');
-        }
+            // Construir consulta base
+            $query = Order::query();
 
-        if ($request->filled('customer')) {
-            $searchTerm = '%' . $request->input('customer') . '%';
-            $customerIds = Customer::where('name', 'LIKE', $searchTerm)->pluck('id');
-            $query->whereIn('customer_id', $customerIds);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status_id', $request->input('status'));
-        }
-
-        if ($request->filled('service')) {
-            $serviceName = '%' . $request->input('service') . '%';
-            $serviceIds = Service::where('name', 'LIKE', $serviceName)->pluck('id');
-            $orderIds = OrderService::whereIn('service_id', $serviceIds)->pluck('order_id');
-            $query->whereIn('id', $orderIds);
-        }
-
-        if ($request->filled('date_range')) {
-            [$startDate, $endDate] = array_map(function ($d) {
-                return Carbon::createFromFormat('d/m/Y', trim($d));
-            }, explode(' - ', $request->input('date_range')));
-
-            $query->whereBetween('programmed_date', [
-                $startDate->format('Y-m-d'),
-                $endDate->format('Y-m-d'),
-            ]);
-
-            $initial_date = Carbon::parse($startDate)->firstOfMonth()->format('Y-m-d');
-        }
-
-        if ($request->filled('time')) {
-            $query->whereTime('start_time', $request->input('time'));
-        }
-
-        if ($request->filled('order_type')) {
-            if ($request->input('order_type') == 'MIP') {
-                $query->where('contract_id', '>', 0);
-            } else {
-                $query->whereNull('contract_id');
+            // Aplicar filtros (mantén tus filtros existentes)
+            if ($request->filled('folio')) {
+                $query->where('folio', 'like', '%' . $request->input('folio') . '%');
             }
-        }
 
-        if ($request->filled('signature_status')) {
-            if ($request->input('signature_status') == 'signed') {
-                $query->whereNotNull('customer_signature');
-            } elseif ($request->input('signature_status') == 'unsigned') {
-                $query->whereNull('customer_signature');
+            if ($request->filled('customer')) {
+                $searchTerm = '%' . $request->input('customer') . '%';
+                $customerIds = Customer::where('name', 'LIKE', $searchTerm)->pluck('id');
+                $query->whereIn('customer_id', $customerIds);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status_id', $request->input('status'));
+            }
+
+            if ($request->filled('service')) {
+                $serviceName = '%' . $request->input('service') . '%';
+                $serviceIds = Service::where('name', 'LIKE', $serviceName)->pluck('id');
+                $orderIds = OrderService::whereIn('service_id', $serviceIds)->pluck('order_id');
+                $query->whereIn('id', $orderIds);
+            }
+
+            if ($request->filled('date_range')) {
+                [$startDate, $endDate] = array_map(function ($d) {
+                    return Carbon::createFromFormat('d/m/Y', trim($d));
+                }, explode(' - ', $request->input('date_range')));
+
+                $query->whereBetween('programmed_date', [
+                    $startDate->format('Y-m-d'),
+                    $endDate->format('Y-m-d'),
+                ]);
+
+                $initial_date = Carbon::parse($startDate)->firstOfMonth()->format('Y-m-d');
+            }
+
+            if ($request->filled('time')) {
+                $query->whereTime('start_time', $request->input('time'));
+            }
+
+            if ($request->filled('order_type')) {
+                if ($request->input('order_type') == 'MIP') {
+                    $query->where('contract_id', '>', 0);
+                } else {
+                    $query->whereNull('contract_id');
+                }
+            }
+
+            if ($request->filled('signature_status')) {
+                if ($request->input('signature_status') == 'signed') {
+                    $query->whereNotNull('customer_signature');
+                } elseif ($request->input('signature_status') == 'unsigned') {
+                    $query->whereNull('customer_signature');
+                }
+            }
+        } else {
+            $query = Tracking::query();
+            // Aplicar filtros (mantén tus filtros existentes)
+            if ($request->filled('folio')) {
+                $orders = Order::where('folio', 'like', '%' . $request->input('folio') . '%');
+                $query->whereIn('order_id', $orders->pluck('id'));
+            }
+
+            if ($request->filled('customer')) {
+                $searchTerm = '%' . $request->input('customer') . '%';
+                $customerIds = Customer::where('name', 'LIKE', $searchTerm)->pluck('id');
+                $query->whereIn('customer_id', $customerIds);
+            }
+
+            if ($request->filled('service')) {
+                $serviceName = '%' . $request->input('service') . '%';
+                $serviceIds = Service::where('name', 'LIKE', $serviceName)->pluck('id');
+                $query->whereIn('service_id', $serviceIds);
+            }
+
+            if ($request->filled('date_range')) {
+                [$startDate, $endDate] = array_map(function ($d) {
+                    return Carbon::createFromFormat('d/m/Y', trim($d));
+                }, explode(' - ', $request->input('date_range')));
+
+                $query->whereBetween('next_date', [
+                    $startDate->format('Y-m-d'),
+                    $endDate->format('Y-m-d'),
+                ]);
+
+                $initial_date = Carbon::parse($startDate)->firstOfMonth()->format('Y-m-d');
             }
         }
 
@@ -260,8 +297,13 @@ class CRMController extends Controller
         $size = $size ?? $this->size;
 
         // Paginar resultados
-        $orders = $query->get();
-        $calendar_data = $this->makeAgenda($orders);
+        $data = $query->get();
+
+        if ($filter_action == 'orders') {
+            $calendar_data = $this->makeAgendaByOrders($data);
+        }else {
+            $calendar_data = $this->makeAgendaByTrackings($data);
+        }
 
         return view('crm.agenda.calendar', [
             'calendar_events' => json_encode($calendar_data),
@@ -270,6 +312,7 @@ class CRMController extends Controller
             'nav' => 'c',
             'hasFilters' => true, // Puedes usar esto en tu vista,
             'initial_date' => $initial_date,
+            'filter_action' => $filter_action
         ]);
     }
 
@@ -303,8 +346,8 @@ class CRMController extends Controller
     {
         $tracking_query = Tracking::query();
 
-        $startDate = now()->startOfWeek();
-        $endDate = now()->endOfWeek();
+        //$startDate = now()->startOfWeek();
+        //$endDate = now()->endOfWeek();
 
         if ($request->filled('trackable')) {
             $searchTerm = '%' . $request->trackable . '%';
@@ -436,59 +479,6 @@ class CRMController extends Controller
             ->toArray();
 
         $colors = $this->generateChartColors(count($services), 'blue');
-
-        $data_charts['services'] = [
-            'labels' => array_column($services, 'name'),
-            'datasets' => [
-                [
-                    'label' => 'Servicios',
-                    'data' => array_column($services, 'count'),
-                    'backgroundColor' => $colors,
-                    'borderWidth' => 1,
-                ],
-            ],
-        ];
-
-        $service_ids = array_column($services, 'id');
-        $services_count = array_fill(0, count($service_ids), 0);
-        foreach ($service_ids as $index => $service_id) {
-            $services_count[$index] = Tracking::where('trackable_id', $customerId)->where('service_id', $service_id)->count();
-        }
-
-        $data_charts['trackingByServices'] = [
-            'labels' => array_column($services, 'name'),
-            'datasets' => [
-                [
-                    'label' => 'Trackings por mes',
-                    'data' => $services_count,
-                    'backgroundColor' => $colors,
-                    'borderWidth' => 1,
-                ],
-            ],
-        ];
-
-        $trackings = Tracking::where('trackable_id', $customerId)->whereIn('service_id', $service_ids)->get();
-        $monthly_counts = array_fill(0, 12, 0);
-        foreach ($trackings as $tracking) {
-            if ($tracking->next_date) {
-                $month = Carbon::parse($tracking->next_date)->month - 1; // 0-11
-                $monthly_counts[$month]++;
-            }
-        }
-
-        $data_charts['trackingByMonths'] = [
-            'labels' => ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-            'datasets' => [
-                [
-                    'label' => 'Seguimientos por mes',
-                    'data' => $monthly_counts,
-                    'borderColor' => 'rgba(75, 192, 192, 1)',
-                    'borderWidth' => 2,
-                    'tension' => 0.5,
-                ],
-            ],
-        ];
-        return view('dashboard.crm.tracking.services', compact('services', 'data_charts', 'trackings', 'customer'));
     }
 
     public function trackingByCustomer(Request $request)
@@ -693,9 +683,8 @@ class CRMController extends Controller
         $view = $request->view ?? 'trackings'; // Valor por defecto
         $url = $this->search_urls[$view];
 
-        $startDate = now()->startOfWeek();
-        $endDate = now()->endOfWeek();
-        $calendar_events = json_encode($this->makeAgenda($startDate, $endDate));
+        $orders = Order::whereBetween('programmed_date', [now()->startOfWeek(), now()->endOfWeek()])->get();
+        $calendar_events = json_encode($this->makeAgenda($orders));
 
         //dd($request->all());
 

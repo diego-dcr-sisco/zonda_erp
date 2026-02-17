@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->foreignId('tenant_id')->nullable()->constrained('tenant')->onDelete('cascade');
             $table->string('question');
             $table->foreignId('question_option_id')->constrained('question_option')->onDelete('cascade');
+            $table->string('answer_default')->nullable();
             $table->timestamps();
         });
     }

@@ -292,6 +292,7 @@ class AppController extends Controller
 				$order->completed_date = Carbon::parse($data['completed_date'])->format('Y-m-d') ?? null;
 				$order->notes = $data['notes'] ?? null;
 				$order->customer_signature = $data['customer_signature'] ?? null;
+				$order->signature_name = $data['signature_name'] ?? null;
 				$order->closed_by = $data['user_id'] ?? null;
 				$order->synchronized_by = $data['user_id'] ?? null;
 				$order->synchronized_at = now();

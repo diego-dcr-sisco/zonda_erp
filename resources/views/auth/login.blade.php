@@ -219,7 +219,7 @@
                         </div>
                     </div>
 
-                    <div class="card-body p-4 pt-3">
+                    <div class="card-body p-3">
                         @if ($errors->any())
                             <div class="alert alert-danger alert-dismissible fade show animate__animated animate__shakeX" role="alert">
                                 @foreach ($errors->all() as $error)
@@ -269,18 +269,10 @@
                                 </button>
                             </div>
                         </form>
-
-                        <!-- Mensaje de seguridad -->
-                        <div class="security-message">
-                            <small>
-                                <i class="bi bi-shield-check"></i>
-                                Acceso protegido por encriptación SSL
-                            </small>
-                        </div>
                     </div>
                     
                     <!-- Footer del card -->
-                    <div class="card-footer bg-transparent border-0 text-center py-3">
+                    <div class="card-footer bg-transparent border-0 text-center pb-3">
                         <small class="text-muted">
                             <i class="bi bi-c-circle me-1"></i>
                             2026 ZONDA Systems • v1.0.0

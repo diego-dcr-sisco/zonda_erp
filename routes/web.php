@@ -113,7 +113,7 @@ Route::prefix('quality')
         Route::get('/customer/{id}', [QualityController::class, 'customer'])->name('customer');
         Route::delete('/customer/{customerId}/{matrixId}/destroy', [QualityController::class, 'destroyRelation'])->name('customer.destroyRelation');
 
-        // rutas de graficas de calidad
+        // rutas de Estadisticas de calidad
         Route::get('/customer/{id}/analytics', [QualityController::class, 'analytics'])->name('analytics');
         Route::get('/customer/{customer}/analytics/device-consumption', [QualityController::class, 'deviceConsumptionTable'])->name('deviceConsumptionTable');
 
@@ -225,7 +225,7 @@ Route::prefix('stock')
         Route::put('/indirect/update/{id}', [StockController::class, 'updateIndirectProduct'])->name('indirect.update');
         Route::delete('/indirect/destroy/{id}', [StockController::class, 'destroyIndirectProduct'])->name('indirect.destroy');
 
-        // Graficas y estadistica
+        // Estadisticas y estadistica
         Route::get('/analytics', [StockController::class, 'analytics'])->name('analytics');
 
         // Exportar stock a excel 
@@ -293,6 +293,8 @@ Route::prefix('crm/chart')
         Route::get('/monthlyServices/update', [GraphicController::class, 'refreshMonthlyServices'])->name('monthlyServices.refresh');
         Route::get('/serviceOrders', [GraphicController::class, 'serviceOrdersDataset'])->name('serviceOrders');
         Route::get('/serviceOrders/update', [GraphicController::class, 'refreshServiceOrders'])->name('serviceOrders.refresh');
+        Route::get('/pestsDonut', [GraphicController::class, 'pestsDonutDataset'])->name('pestsDonut');
+        Route::get('/pestsDonut/update', [GraphicController::class, 'refreshPestsDonut'])->name('pestsDonut.refresh');
 
         Route::get('/crm/chart/leads', [GraphicController::class, 'leadsByServiceType'])->name('chartLeads');
 
@@ -313,10 +315,12 @@ Route::prefix('crm/chart')
         Route::get('/services-programmed', [GraphicController::class, 'servicesProgrammedJson'])->name('servicesProgrammedJson');
         Route::get('/trackings-by-month', [GraphicController::class, 'trackingsByMonthJson'])->name('trackingsByMonthJson');
         Route::get('/pests-by-customer', [GraphicController::class, 'pestsByCustomerJson'])->name('pestsByCustomerJson');
+        Route::get('/services-completed-by-month', [GraphicController::class, 'servicesCompletedByMonth'])->name('servicesCompletedByMonth');
 
         // views
         Route::get('/dashboard', [GraphicController::class, 'index'])->name('dashboard');
-    }); // CRM CHARTS
+    }); 
+    
 Route::get('/CRM/chart/customers-by-category', [GraphicController::class, 'customersByCategory'])
     ->name('crm.chart.customersByCategory');
 
@@ -505,6 +509,7 @@ Route::prefix('floorplans')
         Route::get('/graphic/incidents/{id}', [FloorPlansController::class, 'graphicIncidents'])->name('graphic.incidents');
         // Estadísticas por dispositivo (vista individual)
         Route::get('/devices/{floorplan}/device/{device}/stats', [FloorPlansController::class, 'deviceStats'])->name('device.stats');
+        Route::get('/devices/{floorplan}/device/{device}/stats/pdf', [FloorPlansController::class, 'deviceStatsPDF'])->name('device.stats.pdf');
 
         Route::get('/floorplans/show/{path}', [FloorPlansController::class, 'getImage'])->where('path', '.*')->name('image.show');
         Route::post('/floorplan/{id}/search/version', [FloorPlansController::class, 'searchDevicesbyVersion'])->name('search.device.version');
@@ -731,7 +736,7 @@ Route::prefix('report')
         Route::post('/set/incident/{orderId}', [ReportController::class, 'setIncident'])->name('set.incident');
 
         Route::post('/device', [ReportController::class, 'getDevices'])->name('device');
-        Route::post('/device/bulk', [ReportController::class, 'bulkPrint'])->name('bulk');
+        Route::post('/device/bulk', [ReportController::class, 'printBulk'])->name('bulk');
         Route::get('/device/bulk/download/{timer}', [ReportController::class, 'downloadBulk'])->name('bulk.download');
         Route::get('/device/bulk/delete/{timer}', [ReportController::class, 'deleteBulk'])->name('bulk.delete');
 

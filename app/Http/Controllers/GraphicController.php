@@ -17,18 +17,25 @@ use App\Models\WarehouseMovement;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class GraphicController extends Controller
 {
     private $colors = [
-        'PrussianBlue'   => '#264653',
-        'Charcoal'       => '#2A9D8F',
-        'Jasper'         => '#C3523E',
-        'ResolutionBlue' => '#F4A261',
-        'MarianBlue'     => '#E76F51',
-        'PigmentGreen'   => '#4FA84D',
-        'HarvestGold'    => '#F5AC23',
-        'PersianRed'     => '#C63030',
+        'DeepSpaceBlue'     => '#012640',
+        'DeepNavy'          => '#02265A',
+        'TrueCobalt'        => '#0A2986',
+        'IndigoVelvet'      => '#512A87',
+        'VelvetPurple'      => '#773774',
+        'DustyMauve'        => '#B74453',
+        'FieryTerracotta'   => '#DE523B',
+    ];
+
+    // Colores estándar para tipos de servicio (Doméstico, Comercial, Industrial)
+    private $service_colors = [
+        'Domestico'  => '#0A2986',  // True Cobalt
+        'Comercial'  => '#512A87',  // Indigo Velvet
+        'Industrial' => '#DE523B',  // Fiery Terracotta
     ];
 
     private $movement_colors = [
@@ -69,62 +76,37 @@ class GraphicController extends Controller
         $actualYear  = $request->input('year', Carbon::now()->year);
         $actualMonth = $request->input('month', Carbon::now()->month);
 
-        // Graficas de clientes
+        // Estadisticas de clientes
         $anualCustomersChart  = $this->totalCustomersByYear($actualYear);
         $chart                = $this->newCustomers();                                       // Nuevos clientes por mes
         $categoryChart        = $this->customersByYear();                                    // Total de clientes por categoría
         $leadsChart           = $this->newLeadsByMonth($request, $actualYear, $actualMonth); // Leads captados en el mes
-        $monthlyServicesPieChart = $this->monthlyServices();                                // Tipos de servicios captados por mes
-        
-        // Nuevas gráficas anuales
-        $customersYearlyChart = $this->customersByMonth($actualYear);                        // Clientes por mes (todo el año)
-        $leadsYearlyChart     = $this->leadsByMonth($actualYear);                            // Leads por mes (todo el año)
+        $monthlyServicesChart = $this->monthlyServices();                                    // Tipos de servicios captados por mes
+        $pestsDonutChart      = $this->pestsDonutChart();                                    // Plagas más presentadas
 
-        // Graficas de calidad
+        // Estadisticas de calidad
         $adminUsers         = Administrative::all();
         $orderServicesChart = $this->serviceOrders(); // Ordenes de servicio por admin
 
         $navigation = [
-            'Agenda' => [
-                'route' => route('crm.agenda'),
-                'permission' => 'handle_planning'
-            ],
-            'Clientes' => [
-                'route' => route('customer.index'),
-                'permission' => null
-            ],
-            'Sedes' => [
-                'route' => route('customer.index.sedes'),
-                'permission' => 'show_sedes'
-            ],
-            'Clientes potenciales' => [
-                'route' => route('customer.index.leads'),
-                'permission' => null
-            ],
-            'Ordenes de servicio' => [
-                'route' => route('order.index'),
-                'permission' => null
-            ],
-            'Estadisticas' => [
-                'route' => route('crm.chart.dashboard'),
-                'permission' => null
-            ],
-            /*'Facturacion' => [
-                'route' => route('invoices.index'),
-                'permission' => 'handle_invoice'
-            ]*/
+            'Agenda'               => ['route' => route('crm.agenda'), 'permission' => null],
+            'Clientes'             => ['route' => route('customer.index'), 'permission' => null],
+            'Sedes'                => ['route' => route('customer.index.sedes'), 'permission' => null],
+            'Clientes potenciales' => ['route' => route('customer.index.leads'), 'permission' => null],
+            'Estadisticas'         => ['route' => route('crm.chart.dashboard'), 'permission' => null],
+            'Ordenes de servicio'  => ['route' => route('order.index'), 'permission' => null],
+            'Facturacion'          => ['route' => route('invoices.index'), 'permission' => null],
         ];
 
         return view('crm.charts.dashboard', compact(
             'chart',
             'categoryChart',
             'leadsChart',
-            'monthlyServicesPieChart',
+            'monthlyServicesChart',
+            'pestsDonutChart',
             'adminUsers',
             'orderServicesChart',
             'anualCustomersChart',
-            'customersYearlyChart',
-            'leadsYearlyChart',
             'actualYear',
             'actualMonth',
             'navigation'
@@ -173,16 +155,16 @@ class GraphicController extends Controller
         ]);
 
         $chart->dataset('Domésticos', 'line', $domestics)
-            ->backgroundColor('rgba(3, 155, 229, 0.2)')
-            ->color('#039BE5');
+            ->backgroundColor('rgba(10, 41, 134, 0.2)')
+            ->color('#0A2986');
 
         $chart->dataset('Comerciales', 'line', $comercials)
-            ->backgroundColor('rgba(26, 35, 126, 0.2)')
-            ->color('#1A237E');
+            ->backgroundColor('rgba(81, 42, 135, 0.2)')
+            ->color('#512A87');
 
         $chart->dataset('Industrial/Planta', 'line', $industrials)
-            ->backgroundColor('rgba(76, 175, 80, 0.2)')
-            ->color('#4CAF50');
+            ->backgroundColor('rgba(222, 82, 59, 0.2)')
+            ->color('#DE523B');
 
         return $chart;
     }
@@ -228,7 +210,7 @@ class GraphicController extends Controller
                         'type'      => 'bar',
                         'data'      => [$domestics, $comercials, $industrials],
                         'itemStyle' => [
-                            'color' => ['red', 'blue', 'green'],
+                            'color' => ['#0A2986', '#512A87', '#DE523B'],
                         ],
                     ],
                 ],
@@ -239,116 +221,8 @@ class GraphicController extends Controller
         $chart = new SampleChart;
         $chart->labels(['Domésticos', 'Comerciales', 'Industrial/Planta']);
         $chart->dataset('Leads', 'bar', [$domestics, $comercials, $industrials])
-            ->backgroundColor(['red', 'blue', 'green'])
-            ->color(['red', 'blue', 'green']);
-
-        return $chart;
-    }
-
-    ////////////////////////////// Clientes por mes (Todos los meses del año)
-
-    public function customersByMonth($year = null)
-    {
-        $year = $year ?? Carbon::now()->year;
-        $domestics = [];
-        $comercials = [];
-        $industrials = [];
-
-        for ($month = 1; $month <= 12; $month++) {
-            // Contar solo sedes (general_sedes != 0 o general_sedes != NULL)
-            // Excluir matrices (general_sedes = 0 o general_sedes = NULL)
-            $domestics[] = Customer::whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->where('service_type_id', 1)
-                ->where(function($query) {
-                    $query->whereNotNull('general_sedes')
-                        ->where('general_sedes', '!=', 0);
-                })
-                ->count();
-
-            $comercials[] = Customer::whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->where('service_type_id', 2)
-                ->where(function($query) {
-                    $query->whereNotNull('general_sedes')
-                        ->where('general_sedes', '!=', 0);
-                })
-                ->count();
-
-            $industrials[] = Customer::whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->where('service_type_id', 3)
-                ->where(function($query) {
-                    $query->whereNotNull('general_sedes')
-                        ->where('general_sedes', '!=', 0);
-                })
-                ->count();
-        }
-
-        $chart = new TotalCustomersChart;
-        $chart->labels([
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-        ]);
-
-        $chart->dataset('Domésticos', 'line', $domestics)
-            ->backgroundColor('rgba(3, 155, 229, 0.2)')
-            ->color('#039BE5');
-
-        $chart->dataset('Comerciales', 'line', $comercials)
-            ->backgroundColor('rgba(26, 35, 126, 0.2)')
-            ->color('#1A237E');
-
-        $chart->dataset('Industrial/Planta', 'line', $industrials)
-            ->backgroundColor('rgba(76, 175, 80, 0.2)')
-            ->color('#4CAF50');
-
-        return $chart;
-    }
-
-    ////////////////////////////// Leads por mes (Todos los meses del año)
-
-    public function leadsByMonth($year = null)
-    {
-        $year = $year ?? Carbon::now()->year;
-        $domestics = [];
-        $comercials = [];
-        $industrials = [];
-
-        for ($month = 1; $month <= 12; $month++) {
-            $domestics[] = Lead::whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->where('service_type_id', 1)
-                ->count();
-
-            $comercials[] = Lead::whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->where('service_type_id', 2)
-                ->count();
-
-            $industrials[] = Lead::whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->where('service_type_id', 3)
-                ->count();
-        }
-
-        $chart = new SampleChart;
-        $chart->labels([
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-        ]);
-
-        $chart->dataset('Domésticos', 'line', $domestics)
-            ->backgroundColor('rgba(3, 155, 229, 0.2)')
-            ->color('#039BE5');
-
-        $chart->dataset('Comerciales', 'line', $comercials)
-            ->backgroundColor('rgba(26, 35, 126, 0.2)')
-            ->color('#1A237E');
-
-        $chart->dataset('Industrial/Planta', 'line', $industrials)
-            ->backgroundColor('rgba(76, 175, 80, 0.2)')
-            ->color('#4CAF50');
+            ->backgroundColor(['#0A2986', '#512A87', '#DE523B'])
+            ->color(['#0A2986', '#512A87', '#DE523B']);
 
         return $chart;
     }
@@ -391,8 +265,8 @@ class GraphicController extends Controller
 
         $chart = new SampleChart;
         $chart->dataset('Nuevos Clientes', 'bar', $counts)
-            ->backgroundColor(['#039BE5', '#1A237E', '#4CAF50']) // Colores para cada barra
-            ->color(['#039BE5', '#1A237E', '#4CAF50']);          // Bordes para cada barra
+            ->backgroundColor(['#FFA000', '#0D47A1', '#D32F2F']) // Colores para cada barra
+            ->color(['#FFA000', '#0D47A1', '#D32F2F']);          // Bordes para cada barra
 
         return $chart->api();
     }
@@ -427,8 +301,8 @@ class GraphicController extends Controller
         $chart = new SampleChart;
         $chart->labels(['Domésticos', 'Comerciales', 'Industrial/Planta']);
         $chart->dataset('Nuevos Clientes', 'bar', $counts)
-            ->backgroundColor(['#039BE5', '#1A237E', '#4CAF50']) // Colores para cada barra
-            ->color(['#039BE5', '#1A237E', '#4CAF50']);          // Bordes para cada barra
+            ->backgroundColor(['#0A2986', '#512A87', '#DE523B']) // Colores para cada barra
+            ->color(['#0A2986', '#512A87', '#DE523B']);          // Bordes para cada barra
 
         return $chart->api();
     }
@@ -499,16 +373,16 @@ class GraphicController extends Controller
         ]);
 
         $chart->dataset('Domésticos', 'line', $domestics)
-            ->backgroundColor('rgba(3, 155, 229, 0.2)')
-            ->color('#039BE5');
+            ->backgroundColor('rgba(10, 41, 134, 0.2)')
+            ->color('#0A2986');
 
         $chart->dataset('Comerciales', 'line', $comercials)
-            ->backgroundColor('rgba(26, 35, 126, 0.2)')
-            ->color('#1A237E');
+            ->backgroundColor('rgba(81, 42, 135, 0.2)')
+            ->color('#512A87');
 
         $chart->dataset('Industrial/Planta', 'line', $industrials)
-            ->backgroundColor('rgba(76, 175, 80, 0.2)')
-            ->color('#4CAF50');
+            ->backgroundColor('rgba(222, 82, 59, 0.2)')
+            ->color('#DE523B');
 
         return $chart->api();
     }
@@ -554,16 +428,16 @@ class GraphicController extends Controller
         ]);
 
         $chart->dataset('Domésticos', 'line', $domestics)
-            ->backgroundColor('rgba(3, 155, 229, 0.2)')
-            ->color('#039BE5');
+            ->backgroundColor('rgba(10, 41, 134, 0.2)')
+            ->color('#0A2986');
 
         $chart->dataset('Comerciales', 'line', $comercials)
-            ->backgroundColor('rgba(26, 35, 126, 0.2)')
-            ->color('#1A237E');
+            ->backgroundColor('rgba(81, 42, 135, 0.2)')
+            ->color('#512A87');
 
         $chart->dataset('Industrial/Planta', 'line', $industrials)
-            ->backgroundColor('rgba(76, 175, 80, 0.2)')
-            ->color('#4CAF50');
+            ->backgroundColor('rgba(222, 82, 59, 0.2)')
+            ->color('#DE523B');
 
         return $chart->api();
     }
@@ -605,8 +479,8 @@ class GraphicController extends Controller
         $chart = new MonthlyLeadsChart;
         $chart->labels(['Domésticos', 'Comerciales', 'Industrial/Planta']);
         $chart->dataset('Leads', 'bar', $counts)
-            ->backgroundColor(['rgba(3, 155, 229, 0.2), rgba(26, 35, 126, 0.2), rgba(76, 175, 80, 0.2)'])
-            ->color(['#039BE5', '#1A237E', '#4CAF50']);
+            ->backgroundColor(['rgba(10, 41, 134, 0.2), rgba(81, 42, 135, 0.2), rgba(222, 82, 59, 0.2)'])
+            ->color(['#0A2986', '#512A87', '#DE523B']);
 
         return $chart->api();
     }
@@ -636,8 +510,8 @@ class GraphicController extends Controller
         $chart = new MonthlyLeadsChart;
         $chart->labels(['Domésticos', 'Comerciales', 'Industrial/Planta']);
         $chart->dataset('Leads', 'bar', $counts)
-            ->backgroundColor(['rgba(3, 155, 229, 0.2), rgba(26, 35, 126, 0.2), rgba(76, 175, 80, 0.2)'])
-            ->color(['#039BE5', '#1F237E', '#4CAF50']);
+            ->backgroundColor(['rgba(10, 41, 134, 0.2), rgba(81, 42, 135, 0.2), rgba(222, 82, 59, 0.2)'])
+            ->color(['#0A2986', '#512A87', '#DE523B']);
 
         return $chart->api();
     }
@@ -686,7 +560,7 @@ class GraphicController extends Controller
                     'data'      => [$domestics, $comercials, $industrials],
                     'itemStyle' => [
                         'color' => function ($params) {
-                            $colors = ['#039BE5', '#1A237E', '#4CAF50'];
+                            $colors = ['#FFA000', '#0D47A1', '#D32F2F'];
                             return $colors[$params['dataIndex']];
                         },
                     ],
@@ -733,48 +607,12 @@ class GraphicController extends Controller
             })
             ->count();
 
-        if (request()->ajax()) {
-            return response()->json([
-                'title'   => [
-                    'text' => '',
-                ],
-                'tooltip' => [
-                    'trigger' => 'axis',
-                ],
-                'xAxis'   => [
-                    'type' => 'category',
-                    'data' => ['Domésticos', 'Comerciales', 'Industrial/Planta'],
-                ],
-                'yAxis'   => [
-                    'type' => 'value',
-                ],
-                'series'  => [
-                    [
-                        'name'      => 'Servicios',
-                        'type'      => 'bar',
-                        'data'      => [$domestics, $comercials, $industrials],
-                        'itemStyle' => [
-                            'color' => ['red', 'blue', 'green'],
-                        ],
-                    ],
-                ],
-            ]);
-        }
-
         $chart = new SampleChart;
-        $chart->labels(['Servicios']);
+        $chart->labels(['Domésticos', 'Comerciales', 'Industrial/Planta']);
 
-        $chart->dataset('Domésticos', 'bar', [$domestics])
-            ->backgroundColor('red')
-            ->color('red');
-
-        $chart->dataset('Comerciales', 'bar', [$comercials])
-            ->backgroundColor('blue')
-            ->color('blue');
-
-        $chart->dataset('Industrial/Planta', 'bar', [$industrials])
-            ->backgroundColor('green')
-            ->color('green');
+        $chart->dataset('Servicios', 'doughnut', [$domestics, $comercials, $industrials])
+            ->backgroundColor(['#0A2986', '#512A87', '#DE523B'])
+            ->color(['#0A2986', '#512A87', '#DE523B']);
 
         return $chart->api();
     }
@@ -805,37 +643,115 @@ class GraphicController extends Controller
             })
             ->count();
 
+        $chart = new SampleChart;
+        $chart->labels(['Domésticos', 'Comerciales', 'Industrial/Planta']);
+
+        $chart->dataset('Servicios', 'doughnut', [$domestics, $comercials, $industrials])
+            ->backgroundColor(['#0A2986', '#512A87', '#DE523B'])
+            ->color(['#0A2986', '#512A87', '#DE523B']);
+
+        return $chart->api();
+    }
+
+    ////////////////////////////// Servicios completados por mes
+
+    public function servicesCompletedByMonth(Request $request)
+    {
+        $year = $request->input('year', Carbon::now()->year);
+        
+        $monthlyServices = [];
+        $monthLabels = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $monthLabels[] = Carbon::create()->month($month)->locale('es')->monthName;
+            
+            // Contar todas las órdenes generadas en el mes
+            $servicesCount = Order::whereMonth('created_at', $month)
+                ->whereYear('created_at', $year)
+                ->count();
+            
+            $monthlyServices[] = $servicesCount;
+        }
+
         return response()->json([
-            'title'   => [
-                'text' => '',
-            ],
-            'tooltip' => [
-                'trigger' => 'axis',
-            ],
-            'xAxis'   => [
-                'type' => 'category',
-                'data' => ['Domésticos', 'Comerciales', 'Industrial/Planta'],
-            ],
-            'yAxis'   => [
-                'type' => 'value',
-            ],
-            'series'  => [
-                [
-                    'name'      => 'Servicios',
-                    'type'      => 'bar',
-                    'data'      => [$domestics, $comercials, $industrials],
-                    'itemStyle' => [
-                        'color' => ['red', 'blue', 'green'],
-                    ],
-                ],
-            ],
+            'labels' => $monthLabels,
+            'data' => $monthlyServices,
         ]);
     }
-    //////////////////////// Fin de graficas de CLIENTES ////////////////////////////////////////
+
+    //////////////////////// Fin de Estadisticas de CLIENTES ////////////////////////////////////////
     // -------------------------------------------------------------------------------------- //
 
     ////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////// GRAFICAS DE CALIDAD //////////////////////////////////////////
+    /////////////////////////////// Estadisticas DE CALIDAD //////////////////////////////////////////
+
+    ////////////////////////////// Plagas más presentadas por mes
+
+    public function pestsDonutChart()
+    {
+        $labels = ['Plagas'];
+        $api    = route('crm.chart.pestsDonut');
+        $chart  = new SampleChart;
+        $chart->labels($labels)->load($api);
+
+        return $chart;
+    }
+
+    public function pestsDonutDataset()
+    {
+        $month = Carbon::now()->month;
+        $year  = Carbon::now()->year;
+
+        $pestsData = DB::table('device_pest')
+            ->join('order', 'device_pest.order_id', '=', 'order.id')
+            ->join('pest_catalog', 'device_pest.pest_id', '=', 'pest_catalog.id')
+            ->select('pest_catalog.id', 'pest_catalog.name', DB::raw('SUM(device_pest.total) as total_count'))
+            ->whereMonth('order.programmed_date', $month)
+            ->whereYear('order.programmed_date', $year)
+            ->groupBy('pest_catalog.id', 'pest_catalog.name')
+            ->orderBy('total_count', 'desc')
+            ->limit(10)
+            ->get();
+
+        $labels = $pestsData->pluck('name')->toArray();
+        $data = $pestsData->pluck('total_count')->toArray();
+
+        $chart = new SampleChart;
+        $chart->labels($labels);
+        $chart->dataset('Plagas', 'doughnut', $data)
+            ->backgroundColor($this->colors)
+            ->color($this->colors);
+
+        return $chart->api();
+    }
+
+    public function refreshPestsDonut(Request $request)
+    {
+        $month = $request->input('month');
+        $year  = $request->input('year');
+
+        $pestsData = DB::table('device_pest')
+            ->join('order', 'device_pest.order_id', '=', 'order.id')
+            ->join('pest_catalog', 'device_pest.pest_id', '=', 'pest_catalog.id')
+            ->select('pest_catalog.id', 'pest_catalog.name', DB::raw('SUM(device_pest.total) as total_count'))
+            ->whereMonth('order.programmed_date', $month)
+            ->whereYear('order.programmed_date', $year)
+            ->groupBy('pest_catalog.id', 'pest_catalog.name')
+            ->orderBy('total_count', 'desc')
+            ->limit(10)
+            ->get();
+
+        $labels = $pestsData->pluck('name')->toArray();
+        $data = $pestsData->pluck('total_count')->toArray();
+
+        $chart = new SampleChart;
+        $chart->labels($labels);
+        $chart->dataset('Plagas', 'doughnut', $data)
+            ->backgroundColor($this->colors)
+            ->color($this->colors);
+
+        return $chart->api();
+    }
 
     ////////////////////////////// Gestión de órdenes de servicio por administrador
 
@@ -855,7 +771,7 @@ class GraphicController extends Controller
         $start = Carbon::now()->startOfMonth()->startOfDay();
         $end   = Carbon::now()->endOfMonth()->endOfDay();
 
-        $admin_id = auth()->user()->simpleRole;
+        $admin_id = Auth::user()->simpleRole;
 
         $pending = Order::where('status_id', 1)
             ->whereBetween('created_at', [$start, $end])
@@ -877,8 +793,8 @@ class GraphicController extends Controller
         // pendientes - amarillo(warning), finalizadas - azul(primary), aprovadas - verde(success)
         $chart->labels(['Pendientes', 'Finalizadas', 'Aprovadas']);
         $chart->dataset('Ordenes de Servicio', 'doughnut', $counts)
-            ->backgroundColor(['#ffc107', '#0d6efd', '#198754'])
-            ->color(['#ffc107', '#0d6efd', '#198754']);
+            ->backgroundColor(['#B74453', '#0A2986', '#512A87'])
+            ->color(['#B74453', '#0A2986', '#512A87']);
 
         return $chart->api();
     }
@@ -908,19 +824,19 @@ class GraphicController extends Controller
         $chart  = new SampleChart;
         $chart->labels(['Pendientes', 'Finalizadas', 'Aprovadas']);
         $chart->dataset('Ordenes de Servicio', 'doughnut', $counts)
-            ->backgroundColor(['#ffc107', '#0d6efd', '#198754'])
-            ->color(['#ffc107', '#0d6efd', '#198754']);
+            ->backgroundColor(['#B74453', '#0A2986', '#512A87'])
+            ->color(['#B74453', '#0A2986', '#512A87']);
 
         return $chart->api();
     }
 
     /////////////////////////////// Consumo por dispositivo en ordenes de servicio
 
-    //////////////////////// Fin de graficas de CALIDAD ////////////////////////////////////////
+    //////////////////////// Fin de Estadisticas de CALIDAD ////////////////////////////////////////
     // -------------------------------------------------------------------------------------- //
 
     ////////////////////////////////////////////////////////////////////////////////////////////
-    // Graficas de ordenes o clientes agendados
+    // Estadisticas de ordenes o clientes agendados
 
     public function orders()
     {
@@ -1034,7 +950,7 @@ class GraphicController extends Controller
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////// Graficas Almacen //////////////////////////////////////////
+    /////////////////////////////// Estadisticas Almacen //////////////////////////////////////////
 
     // -------------------------------------------------------------------------------------- //
     //                              Uso de productos
@@ -1188,54 +1104,6 @@ class GraphicController extends Controller
         return $chart;
     }
 
-    public function datasetInventoryByWarehouse()
-    {
-        $warehouseId = request()->get('warehouse_id');
-
-        if ($warehouseId) {
-            // Inventario de un almacén específico: número de productos distintos en el almacén
-            $warehouse = Warehouse::find($warehouseId);
-            $labels    = [$warehouse ? $warehouse->name : 'Almacén'];
-            $amounts   = [
-                WarehouseLot::where('warehouse_id', $warehouseId)
-                    ->where('current_amount', '>', 0)
-                    ->distinct('product_id')
-                    ->count('product_id'),
-            ];
-
-            $chart = new SampleChart;
-            $chart->labels($labels);
-            $chart->dataset('Número de productos distintos', 'bar', $amounts)
-                ->backgroundColor($this->colors[0])
-                ->color($this->colors[0]);
-        } else {
-            // Número de productos distintos por almacén
-            $warehouses = Warehouse::where('is_active', 1)->get();
-            $labels     = [];
-            $amounts    = [];
-
-            foreach ($warehouses as $warehouse) {
-                $numProducts = WarehouseLot::where('warehouse_id', $warehouse->id)
-                    ->where('current_amount', '>', 0)
-                    ->distinct('product_id')
-                    ->count('product_id');
-                $labels[]  = $warehouse->name;
-                $amounts[] = $numProducts;
-            }
-
-            $chart = new SampleChart;
-            $chart->labels($labels);
-            $chart->dataset('Número de productos distintos', 'bar', $amounts)
-                ->backgroundColor($this->colors['PrussianBlue'])
-                ->color($this->colors['PrussianBlue']);
-        }
-
-        return $chart->api();
-    }
-
-    /**
-     * Productos Más Usados por Mes - Tendencias de consumo mensual
-     */
     public function mostUsedProductsByMonth()
     {
         $labels = $this->months;
@@ -1341,7 +1209,7 @@ class GraphicController extends Controller
     // -------------------------------------------------------------------------------------- //
 
     //......................................................................................
-    //........................... GRAFICAS DEL AREA DE CALIDAD..............................
+    //........................... Estadisticas DEL AREA DE CALIDAD..............................
     //......................................................................................
 
     //////////////////////// MÉTODOS JSON PARA AJAX ////////////////////////////////
@@ -1360,10 +1228,10 @@ class GraphicController extends Controller
             $domestics[] = Customer::whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->where('service_type_id', 1)
-                ->where(function($query) {
+                /*->where(function($query) {
                     $query->whereNotNull('general_sedes')
                         ->where('general_sedes', '!=', 0);
-                })
+                })*/
                 ->count();
 
             $comercials[] = Customer::whereMonth('created_at', $month)
@@ -1478,7 +1346,7 @@ class GraphicController extends Controller
         $month = $request->input('month', Carbon::now()->month);
         $year = $request->input('year', Carbon::now()->year);
 
-        // Obtener todos los servicios y contar sus órdenes a través de OrderService
+        // Obtener los 10 servicios más repetidos y contar sus órdenes a través de OrderService
         $servicesData = DB::table('service')
             ->leftJoin('order_service', 'service.id', '=', 'order_service.service_id')
             ->leftJoin('order', 'order_service.order_id', '=', 'order.id')
@@ -1488,6 +1356,7 @@ class GraphicController extends Controller
             ->groupBy('service.id', 'service.name')
             ->having('orders_count', '>', 0)
             ->orderBy('orders_count', 'desc')
+            ->limit(10)
             ->get();
 
         $labels = $servicesData->pluck('name')->toArray();
@@ -1553,4 +1422,8 @@ class GraphicController extends Controller
             'data' => $data,
         ]);
     }
+
+    /**
+     * Generar reporte PDF con gráficas
+     */
 }

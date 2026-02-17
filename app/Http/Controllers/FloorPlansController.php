@@ -20,7 +20,6 @@ use App\Models\Service;
 use App\Models\ApplicationMethod;
 use App\Models\ApplicationMethodService;
 use App\Models\ApplicationArea;
-use App\Models\ProductPest;
 use App\Models\FloorplanVersion;
 use App\Models\PestCatalog;
 use App\Models\Order;
@@ -97,7 +96,7 @@ class FloorPlansController extends Controller
                 'route' => route('customer.show.sede.areas', ['id' => $floorplan->customer_id]),
                 'permission' => 'handle_floorplans'
             ],
-            'Graficas' => [
+            'Estadisticas' => [
                 'route' => route('floorplan.graphic.incidents', ['id' => $floorplan->id]),
                 'permission' => 'handle_floorplans'
             ],
@@ -220,6 +219,7 @@ class FloorPlansController extends Controller
 
             Carbon::setLocale('es');
             setlocale(LC_TIME, 'es_ES.UTF-8');
+            
 
             $image = Image::make(Storage::disk('public')->get('/' . $floorplan->path));
             $img_sizes = [$image->width(), $image->height()];
@@ -1088,45 +1088,58 @@ class FloorPlansController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
+        // Obtener IDs de órdenes relevantes de forma optimizada
+        $orderIdsQuery = DevicePest::where('device_id', $device->id)->select('order_id')->distinct();
+        
         // Órdenes relevantes - usar rango de fechas si están disponibles, sino mes/año
         if ($startDate && $endDate) {
             $orders = Order::whereBetween('programmed_date', [$startDate, $endDate])
-                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->whereIn('id', $orderIdsQuery)
+                ->select('id', 'programmed_date')
                 ->get();
         } else {
             $orders = Order::whereMonth('programmed_date', $month)
                 ->whereYear('programmed_date', $year)
-                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->whereIn('id', $orderIdsQuery)
+                ->select('id', 'programmed_date')
                 ->get();
         }
 
-        // Gráfica por plagas (labels y data)
-        $pests = PestCatalog::whereIn('id', DevicePest::where('device_id', $device->id)->pluck('pest_id')->unique())->get();
-        $labels_pests = $pests->pluck('name');
+        $orderIds = $orders->pluck('id');
+
+        // Gráfica por plagas - optimizada
+        $pestData = DevicePest::where('device_id', $device->id)
+            ->whereIn('order_id', $orderIds)
+            ->selectRaw('pest_id, SUM(total) as total_count')
+            ->groupBy('pest_id')
+            ->get();
+        
+        $pestIds = $pestData->pluck('pest_id');
+        $pests = PestCatalog::whereIn('id', $pestIds)->get()->keyBy('id');
+        
+        $labels_pests = [];
         $data_pests = [];
-        foreach ($pests->pluck('id') as $pid) {
-            $count = DevicePest::where('device_id', $device->id)
-                ->where('pest_id', $pid)
-                ->whereIn('order_id', $orders->pluck('id'))
-                ->sum('total');
-            $data_pests[] = $count;
+        foreach ($pestData as $pd) {
+            if (isset($pests[$pd->pest_id])) {
+                $labels_pests[] = $pests[$pd->pest_id]->name;
+                $data_pests[] = $pd->total_count;
+            }
         }
 
-        // Gráfica por meses (tendencia) para el año seleccionado
+        // Gráfica por meses (tendencia) - optimizada con una sola query
+        $monthlyData = DevicePest::where('device_id', $device->id)
+            ->join('order', 'device_pest.order_id', '=', 'order.id')
+            ->whereYear('order.programmed_date', $year)
+            ->selectRaw('MONTH(order.programmed_date) as month, SUM(device_pest.total) as total_count')
+            ->groupBy('month')
+            ->get()
+            ->keyBy('month');
+
         $labels_months = [];
         $data_months = [];
         for ($m = 1; $m <= 12; $m++) {
             $labels_months[] = $this->months[$m];
-            $orders_month = Order::whereMonth('programmed_date', $m)
-                ->whereYear('programmed_date', $year)
-                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
-                ->get();
-
-            $total_incidents = DevicePest::where('device_id', $device->id)
-                ->whereIn('order_id', $orders_month->pluck('id'))
-                ->sum('total');
-
-            $data_months[] = $total_incidents;
+            $data_months[] = isset($monthlyData[$m]) ? $monthlyData[$m]->total_count : 0;
         }
 
         $graph_per_pests = ['labels' => $labels_pests, 'data' => $data_pests];
@@ -1152,5 +1165,149 @@ class FloorPlansController extends Controller
         $years = $this->getYears();
 
         return view('floorplans.graphics.device_stats', compact('device', 'floorplan', 'navigation', 'months', 'years', 'graph_per_pests', 'graph_per_months', 'reviews'));
+    }
+
+    /**
+     * Generar PDF con las estadísticas del dispositivo
+     */
+    public function deviceStatsPDF(Request $request, string $floorplanId, string $deviceId)
+    {
+        $floorplan = FloorPlans::findOrFail($floorplanId);
+        $device = Device::findOrFail($deviceId);
+
+        if ($device->floorplan_id != $floorplan->id) {
+            abort(404);
+        }
+
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Órdenes relevantes
+        if ($startDate && $endDate) {
+            $orders = Order::whereBetween('programmed_date', [$startDate, $endDate])
+                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->get();
+        } else {
+            $orders = Order::whereMonth('programmed_date', $month)
+                ->whereYear('programmed_date', $year)
+                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->get();
+        }
+
+        // Gráfica por plagas
+        $pests = PestCatalog::whereIn('id', DevicePest::where('device_id', $device->id)->pluck('pest_id')->unique())->get();
+        $labels_pests = $pests->pluck('name')->toArray();
+        $data_pests = [];
+        foreach ($pests->pluck('id') as $pid) {
+            $count = DevicePest::where('device_id', $device->id)
+                ->where('pest_id', $pid)
+                ->whereIn('order_id', $orders->pluck('id'))
+                ->sum('total');
+            $data_pests[] = $count;
+        }
+
+        // Gráfica por meses
+        $labels_months = [];
+        $data_months = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $labels_months[] = $this->months[$m];
+            $orders_month = Order::whereMonth('programmed_date', $m)
+                ->whereYear('programmed_date', $year)
+                ->whereIn('id', DevicePest::where('device_id', $device->id)->pluck('order_id')->unique())
+                ->get();
+
+            $total_incidents = DevicePest::where('device_id', $device->id)
+                ->whereIn('order_id', $orders_month->pluck('id'))
+                ->sum('total');
+
+            $data_months[] = $total_incidents;
+        }
+
+        $graph_per_pests = ['labels' => $labels_pests, 'data' => $data_pests];
+        $graph_per_months = ['labels' => $labels_months, 'data' => $data_months];
+
+        // Últimas 10 revisiones
+        $reviews = OrderIncidents::where('device_id', $device->id)
+            ->with(['question', 'order'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Generar imágenes de gráficas usando QuickChart API
+        $pestsChartImage = $this->generateChartImage([
+            'type' => 'bar',
+            'data' => [
+                'labels' => $labels_pests,
+                'datasets' => [[
+                    'label' => 'Incidentes por plaga',
+                    'data' => $data_pests,
+                    'backgroundColor' => 'rgba(222,82,59,0.5)',
+                    'borderColor' => 'rgba(222,82,59)',
+                    'borderWidth' => 1
+                ]]
+            ],
+            'options' => [
+                'responsive' => true,
+                'scales' => [
+                    'y' => [
+                        'beginAtZero' => true,
+                        'ticks' => ['stepSize' => 1]
+                    ]
+                ]
+            ]
+        ]);
+
+        $trendChartImage = $this->generateChartImage([
+            'type' => 'line',
+            'data' => [
+                'labels' => $labels_months,
+                'datasets' => [[
+                    'label' => 'Incidentes por mes',
+                    'data' => $data_months,
+                    'borderColor' => 'rgba(75,192,75)',
+                    'backgroundColor' => 'rgba(75,192,75,0.1)',
+                    'fill' => true,
+                    'tension' => 0.4
+                ]]
+            ],
+            'options' => [
+                'responsive' => true,
+                'scales' => [
+                    'y' => [
+                        'beginAtZero' => true,
+                        'ticks' => ['stepSize' => 1]
+                    ]
+                ]
+            ]
+        ]);
+
+        $data = compact('device', 'floorplan', 'graph_per_pests', 'graph_per_months', 'reviews', 'year', 'startDate', 'endDate', 'pestsChartImage', 'trendChartImage');
+
+        $pdf = Pdf::loadView('floorplans.graphics.device_stats_pdf', $data)->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'Arial'
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('estadisticas_' . $device->code . '_' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Generar imagen de gráfica usando QuickChart API
+     */
+    private function generateChartImage(array $config): string
+    {
+        $chartConfig = json_encode($config);
+        $url = 'https://quickchart.io/chart?c=' . urlencode($chartConfig) . '&width=800&height=400&devicePixelRatio=2';
+        
+        try {
+            $imageData = file_get_contents($url);
+            return 'data:image/png;base64,' . base64_encode($imageData);
+        } catch (\Exception $e) {
+            // Si falla, retornar una imagen en blanco
+            return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        }
     }
 }

@@ -81,25 +81,26 @@
            ============================================ */
         
         .legend {
-            margin-top: 3mm;
-            margin-bottom: 2mm;
-            padding: 2mm;
+            margin-top: 2mm;
+            margin-bottom: 1.5mm;
+            padding: 1.5mm;
             background-color: #f5f5f5; /* Fondo gris claro */
             border: 1px solid #ccc;
-            font-size: 10px;
+            font-size: 9px;
+            page-break-inside: avoid;
         }
 
         .legend-title {
             font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 1mm;
+            font-size: 11px;
+            margin-bottom: 0.5mm;
             text-align: center;
         }
 
         .legend-item {
             display: block;
-            margin-bottom: 1mm;
-            padding: 0.5mm 0;
+            margin-bottom: 0.5mm;
+            padding: 0.2mm 0;
         }
 
         /* Cuadrito de color que representa cada servicio */
@@ -109,7 +110,26 @@
             height: 8px;
             border: 1px solid #999;
             vertical-align: middle; /* Alineación con el texto */
-            margin-right: 3px;
+            margin-right: 2px;
+        }
+
+        .day-name {
+            font-weight: bold;
+            font-size: 10px;
+            display: inline-block;
+            margin-left: 2px;
+        }
+
+        .services-list {
+            margin-left: 14px;
+            margin-top: 0.3mm;
+            font-size: 8px;
+        }
+
+        .services-list li {
+            margin-bottom: 0.2mm;
+            list-style-type: disc;
+            margin-left: 2mm;
         }
 
         /* ============================================
@@ -238,11 +258,11 @@
         <div class="header-text">
             <h1>Calendario Anual de Servicios</h1>
             <div class="header-info">
-                <!-- Variables pasadas desde el controlador: $contract, $year -->
+                <!-- Variables pasadas desde el controlador: $contract, $startDate, $endDate -->
                 <span><strong>Cliente:</strong> {{ $contract->customer->name }}</span> |
                 <span><strong>Código:</strong> {{ $contract->customer->code }}</span> |
-                <span><strong>Año:</strong> {{ $year }}</span> |
-                <span><strong>Período:</strong> {{ \Carbon\Carbon::parse($contract->startdate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($contract->enddate)->format('d/m/Y') }}</span>
+                <span><strong>Período:</strong> {{ $startDate->format('d/m/Y') }} -
+                    {{ $endDate->format('d/m/Y') }}</span>
             </div>
         </div>
         <div class="header-logo">
@@ -252,17 +272,23 @@
 
     <!-- ============================================
          CALENDARIOS MENSUALES
-         Loop de 12 meses, cada uno como tabla
+         Loop de meses del periodo del contrato
          ============================================ -->
     <div class="months-container">
-        <!-- Itera del 1 al 12 para generar los 12 meses -->
-        @for($month = 1; $month <= 12; $month++)
-            @if($month == 4 || $month == 7 || $month == 10)
+        <!-- Itera sobre los meses del periodo del contrato -->
+        @foreach($months as $index => $monthData)
+            @php
+                $month = $monthData['month'];
+                $year = $monthData['year'];
+                $monthName = $monthData['name'];
+                $yearMonth = $year . '-' . $month;
+            @endphp
+            @if(($index + 1) % 3 == 1 && $index > 0)
                 <div class="clearfix"></div>
             @endif
-            <div class="month-block {{ $month % 3 == 0 ? 'last-in-row' : '' }}">
-                <!-- Título del mes (viene de $monthNames del controlador) -->
-                <div class="month-title">{{ $monthNames[$month] }} {{ $year }}</div>
+            <div class="month-block {{ ($index + 1) % 3 == 0 ? 'last-in-row' : '' }}">
+                <!-- Título del mes -->
+                <div class="month-title">{{ $monthName }} {{ $year }}</div>
                 
                 <!-- Tabla del calendario mensual -->
                 <table class="calendar-table">
@@ -310,7 +336,7 @@
                             @elseif($day <= $daysInMonth)
                                 @php
                                     // Verificar si hay servicio programado este día
-                                    $haService = isset($calendarData[$month][$day]);
+                                    $haService = isset($calendarData[$yearMonth][$day]);
                                     
                                     // Obtener el día de la semana actual (0=domingo, 1=lunes, ..., 6=sábado)
                                     $currentDate = \Carbon\Carbon::create($year, $month, $day);
@@ -353,7 +379,7 @@
                     </tbody>
                 </table>
             </div>
-        @endfor
+        @endforeach
         
         <!-- Limpiar floats después de todos los meses -->
         <div class="clearfix"></div>
@@ -380,10 +406,13 @@
             // Analizar qué servicios se realizan en cada día de la semana
             $colorServices = []; // [dayOfWeek => [array de service_ids]]
             
-            foreach ($calendarData as $month => $days) {
+            foreach ($calendarData as $yearMonth => $days) {
                 foreach ($days as $day => $serviceIds) {
+                    // Extraer año y mes de la clave compuesta
+                    list($yearPart, $monthPart) = explode('-', $yearMonth);
+                    
                     // Obtener día de la semana para esta fecha
-                    $currentDate = \Carbon\Carbon::create($year, $month, $day);
+                    $currentDate = \Carbon\Carbon::create($yearPart, $monthPart, $day);
                     $dayOfWeek = $currentDate->dayOfWeek;
                     
                     if (!isset($colorServices[$dayOfWeek])) {
@@ -404,13 +433,25 @@
         @endphp
         
         @foreach($colorServices as $dayOfWeek => $serviceIds)
+            @php
+                $dayNames = [
+                    1 => 'Lunes',
+                    2 => 'Martes',
+                    3 => 'Miércoles',
+                    4 => 'Jueves',
+                    5 => 'Viernes',
+                    6 => 'Sábado',
+                    0 => 'Domingo',
+                ];
+            @endphp
             <div class="legend-item">
                 <span class="color-box" style="background-color: {{ $weekDayColorsArray[$dayOfWeek] }}"></span>
-                <strong>
-                    @foreach($serviceIds as $index => $serviceId)
-                        {{ $serviceColors[$serviceId]['name'] }}{{ $index < count($serviceIds) - 1 ? ', ' : '' }}
+                <span class="day-name">{{ $dayNames[$dayOfWeek] }}</span>
+                <ul class="services-list">
+                    @foreach($serviceIds as $serviceId)
+                        <li>{{ $serviceColors[$serviceId]['name'] }}</li>
                     @endforeach
-                </strong>
+                </ul>
             </div>
         @endforeach
     </div>

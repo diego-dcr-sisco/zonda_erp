@@ -90,7 +90,6 @@
 
         .bg-blue {
             background-color: #012640;
-            /* background-color: {{ $primaryColor }}; */
             font-weight: bold;
             padding-left: 5px;
             width: 100%;
@@ -123,8 +122,7 @@
         }
 
         .product-table thead tr {
-            /* background-color: #b0bec5; */
-            background-color: {{ $secondaryColor }};
+            background-color: #b0bec5;
             text-align: left;
         }
 
@@ -248,8 +246,7 @@
             text-align: center;
             pointer-events: none;
             z-index: -1;
-            /* opacity: 0.1; */
-            opacity: {{ $watermarkOpacity }};
+            opacity: 0.1;
         }
 
         .watermark img {

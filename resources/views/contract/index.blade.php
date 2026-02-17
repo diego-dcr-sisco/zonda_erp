@@ -146,7 +146,7 @@
                                         data-bs-placement="top" title="Renovar contrato">
                                         <i class="bi bi-arrow-clockwise"></i>
                                     </a>
-                                    <a class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    <a class="btn btn-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                                         title="Plan de rotación"
                                         href="{{ $contract->hasRotationPlan() ? route('rotation.edit', ['id' => $contract->rotationPlan()->id]) : route('rotation.create', ['contractId' => $contract->id]) }}">
                                         <i class="bi bi-arrow-repeat"></i>

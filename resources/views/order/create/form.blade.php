@@ -76,11 +76,6 @@
             <div class="form-text text-danger m-0" id="basic-addon4">
                 * En caso de que no aparezca deberas crearlo.
             </div>
-            <div class="form-text text-danger m-0" id="basic-addon4">
-                * Para añadir días, solo se permite la primera letra en
-                mayúscula: (L) Lunes, (M) Martes, (Mi) Miércoles, (J) Jueves,
-                (V) Viernes, (S) Sábado, (D) Domingo.
-            </div>
             <div class="col-12 p-0 m-0 mb-1">
                 <a href="{{ route('service.create') }}" id="form_service_button" class="btn btn-link" target="_blank">
                     {{ __('service.button.create') }}
