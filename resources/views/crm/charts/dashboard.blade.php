@@ -254,7 +254,7 @@
                         if (logoData) {
                             try {
                                 pdf.addImage(logoData, 'PNG', pageWidth - margin - 25, headerStartY + 3,
-                                    20, 15);
+                                    22, 15);
                             } catch (error) {
                                 console.error('Error agregando logo:', error);
                             }
@@ -276,17 +276,11 @@
 
                         // Información del reporte
                         pdf.setTextColor(0, 0, 0);
-                        pdf.setFontSize(10);
+                        pdf.setFontSize(9);
                         pdf.setFont(undefined, 'bold');
                         pdf.text('Fecha de generación:', margin, currentY);
                         pdf.setFont(undefined, 'normal');
                         pdf.text(new Date().toLocaleString('es-MX'), margin + 50, currentY);
-
-                        currentY += 5;
-                        pdf.setFont(undefined, 'bold');
-                        pdf.text('Usuario:', margin, currentY);
-                        pdf.setFont(undefined, 'normal');
-                        pdf.text('{{ auth()->user()->name ?? 'Sistema' }}', margin + 50, currentY);
 
                         currentY += 5;
                         pdf.setFont(undefined, 'bold');
@@ -457,7 +451,7 @@
 
                         // Descargar PDF
                         const fileName =
-                            `reporte_estadisticas_${new Date().toISOString().slice(0, 10)}.pdf`;
+                            `Reporte_Estadisticas_CRM_${new Date().toISOString().slice(0, 10)}.pdf`;
                         pdf.save(fileName);
 
                     } catch (error) {
