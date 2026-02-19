@@ -1433,9 +1433,9 @@ class StockController extends Controller
             $pdf->MultiCell(0, 0, "E/S: Salida", 0, 'L', 0, 1, $x, $y);
         }
         $y += 5;
-        $pdf->MultiCell(0, 0, "TIPO: " . $movement->movementType->name, 0, 'L', 0, 1, $x, $y);
+        $pdf->MultiCell(0, 0, "TIPO: " . $movement->movementType->name ?? '-', 0, 'L', 0, 1, $x, $y);
         $y += 5;
-        $pdf->MultiCell(0, 0, "ALMACÉN: " . $movement->warehouse->name, 0, 'L', 0, 1, $x, $y);
+        $pdf->MultiCell(0, 0, "ALMACÉN: " . ($movement->warehouse->name ?? '-'), 0, 'L', 0, 1, $x, $y);
         $y += 5;
         if ($warehouse->source_warehouse_id) {
             $pdf->MultiCell(0, 0, "BLOQUEADO: SI", 0, 'L', 0, 1, $x, $y);
@@ -1564,7 +1564,7 @@ class StockController extends Controller
                 'title' => 'Constancia de Movimiento',
                 'date' => $movement->date,
                 'time' => $movement->time,
-                'origin' => $movement->warehouse->name,
+                'origin' => $movement->warehouse->name ?? '-',
                 'destination' => $movement->destinationWarehouse ? $movement->destinationWarehouse->name : 'No Aplica',
                 'movement_type' => $movement->movement->name,
                 'folio' => $movement->id,
