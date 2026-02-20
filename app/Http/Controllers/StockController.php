@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 use App\Models\Branch;
 use App\Models\IndirectProduct;
@@ -100,7 +101,7 @@ class StockController extends Controller
 
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $hasActionPermission = $user->role_id == 4 ?? false;
 
         $products = ProductCatalog::all();
@@ -857,7 +858,7 @@ class StockController extends Controller
             'description' => $request->input('description'),
             'date' => $request->input['date'] ?? now()->format('Y-m-d'),
             'time' => now()->format('H:i:s'),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'warehouse_signature' => $request->input('storekeeper_signature_base64'),
             'technician_signature' => $request->input('technician_signature_base64')
         ]);
@@ -895,7 +896,7 @@ class StockController extends Controller
             'description' => $request->input('description'),
             'date' => $request->input['date'] ?? now()->format('Y-m-d'),
             'time' => now()->format('H:i:s'),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'warehouse_signature' => $request->warehouse_signature,
             'technician_signature' => $request->technician_signature
         ]);
