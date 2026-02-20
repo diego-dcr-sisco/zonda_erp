@@ -13,8 +13,11 @@ use App\Http\Controllers\LotController;
 Route::get('/token/session/get', [AppController::class, 'getCsrfToken']);
 Route::post('/login', [AppController::class, 'login']);
 
-// Rutas protegidas con autenticación Sanctum y sesión única
-Route::middleware(['auth:sanctum', 'single.session'])->group(function () {
+// Rutas protegidas con autenticación Sanctum
+// NOTA: El middleware single.session NO es necesario aquí porque:
+// 1. Al hacer login se revocan todos los tokens anteriores automáticamente
+// 2. auth:sanctum ya valida que el token sea válido y no esté revocado
+Route::middleware(['auth:sanctum'])->group(function () {
     // Logout requiere autenticación
     Route::post('/logout', [AppController::class, 'logout']);
     

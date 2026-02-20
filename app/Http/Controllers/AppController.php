@@ -93,13 +93,24 @@ class AppController extends Controller
 		}
 
 		// Invalidar todas las sesiones anteriores (revocar todos los tokens)
-		$user->tokens()->delete();
+		$tokensDeleted = $user->tokens()->delete();
+		Log::info('Tokens anteriores revocados', [
+			'user_id' => $user->id,
+			'email' => $user->email,
+			'tokens_deleted' => $tokensDeleted
+		]);
 
 		// Crear nuevo token de Sanctum
 		$token = $user->createToken('auth-token')->plainTextToken;
 		
 		// Guardar el token en session_token para control de sesión única
 		$user->update(['session_token' => $token]);
+
+		Log::info('Nuevo token creado', [
+			'user_id' => $user->id,
+			'email' => $user->email,
+			'token_prefix' => substr($token, 0, 10) . '...'
+		]);
 
 		return response()->json([
 			'userId' => $user->id,
