@@ -64,13 +64,13 @@ class OrderController extends Controller
     public function __construct()
     {
         $this->navigation = [
-            'Ordenes de servicios' => [
-                'route' => route('order.index'),
-                'permission' => null,
-            ],
             'Contratos' => [
                 'route' => route('contract.index'),
                 'permission' => 'handle_contracts',
+            ],
+            'Ordenes de servicios' => [
+                'route' => route('order.index'),
+                'permission' => null,
             ],
             'Servicios' => [
                 'route' => route('service.index'),
@@ -590,7 +590,7 @@ class OrderController extends Controller
             $navigation = [
                 'Orden de servicio' => ['route' => route('order.edit', ['id' => $order->id]), 'permission' => null],
                 'Reporte' => ['route' => route('report.review', ['id' => $order->id]), 'permission' => null],
-                'Seguimientos' => ['route' => route('tracking.create.order', ['id' => $order->id]), 'permission' => null],
+                'Seguimientos' => ['route' => route('tracking.create.order', ['id' => $order->id]), 'permission' => 'create_trackings'],
             ];
 
             // Si necesitas order_status para la vista, cargar solo lo necesario

@@ -17,15 +17,27 @@ class SetTenant
         // Resetear el tenant al inicio de cada request
         TenantManager::setCurrentTenant(null);
 
-        // Si el usuario está autenticado, establecer su tenant
-        if (Auth::check()) {
+        // Determinar el guard a usar (sanctum para API, web para sesiones web)
+        $user = null;
+        
+        // Intentar obtener usuario de Sanctum (API)
+        if ($request->expectsJson() || $request->bearerToken()) {
+            $user = Auth::guard('sanctum')->user();
+        }
+        
+        // Si no hay usuario de Sanctum, intentar con guard web
+        if (!$user && Auth::check()) {
             $user = Auth::user();
-            
+        }
+
+        // Si el usuario está autenticado, establecer su tenant
+        if ($user) {
             Log::info('SetTenant Debug', [
                 'user_id' => $user->id,
                 'user_email' => $user->email,
                 'user_tenant_id' => $user->tenant_id ?? 'NULL',
                 'is_superAdmin' => $user->is_superAdmin ?? false,
+                'guard' => $request->expectsJson() ? 'sanctum' : 'web',
             ]);
 
             // Si el usuario tiene tenant_id y es un super admin, permitir acceso sin tenant

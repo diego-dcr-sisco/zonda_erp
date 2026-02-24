@@ -105,11 +105,11 @@ class CustomerController extends Controller
         $this->navigation = [
             'Agenda' => [
                 'route' => route('crm.agenda'),
-                'permission' => 'handle_crm'
+                'permission' => 'show_crm'
             ],
             'Clientes' => [
                 'route' => route('customer.index'),
-                'permission' => null
+                'permission' => 'handle_customers'
             ],
             'Sedes' => [
                 'route' => route('customer.index.sedes'),
@@ -117,15 +117,15 @@ class CustomerController extends Controller
             ],
             'Clientes potenciales' => [
                 'route' => route('customer.index.leads'),
-                'permission' => null
+                'permission' => 'handle_leads'
             ],
             'Ordenes de servicio' => [
                 'route' => route('order.index'),
-                'permission' => null
+                'permission' => 'handle_orders'
             ],
             'Estadisticas' => [
                 'route' => route('crm.chart.dashboard'),
-                'permission' => null
+                'permission' => 'show_crm'
             ],
             //'Facturacion' => [
             //    'route' => route('invoices.index'),
@@ -467,7 +467,7 @@ class CustomerController extends Controller
             ],
             'Planos' => [
                 'route' => route('customer.show.sede.floorplans', ['id' => $customer->id]),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],
             'Portal' => [
                 'route' => route('customer.show.sede.portal', ['id' => $customer->id]),
@@ -475,7 +475,7 @@ class CustomerController extends Controller
             ],
             'Áreas de aplicación' => [
                 'route' => route('customer.show.sede.areas', ['id' => $customer->id]),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],
             //'Seguimientos' => [
             //    'route' => route('customer.show.sede.trackings', ['id' => $customer->id]),
@@ -1121,11 +1121,11 @@ class CustomerController extends Controller
         $navigation = [
             'Cliente potencial' => [
                 'route' => route('customer.edit.lead', ['id' => $lead->id]),
-                'permission' => null
+                'permission' => 'create_leads'
             ],
             'Cotizaciones' => [
                 'route' => route('customer.quote', ['id' => $lead->id, 'class' => 'lead']),
-                'permission' => null
+                'permission' => 'handle_quotes'
             ],
         ];
 

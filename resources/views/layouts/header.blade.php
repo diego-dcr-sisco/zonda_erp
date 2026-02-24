@@ -106,56 +106,58 @@
                 @auth
                     <!-- Menú de Administración (solo para usuarios tipo 1) -->
                     @if (auth()->user()->type_id == 1)
-                        <li class="nav-item dropdown">
-                            <a class="nav-link fw-bold text-light" data-bs-toggle="dropdown" href="#" role="button"
-                                aria-expanded="false">
-                                Menu
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
-                                @if (tenant_can('handle_crm'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('crm.agenda') }}"><i
-                                                class="bi bi-people-fill"></i> CRM</a>
-                                    </li>
-                                @endif
+                        @if (tenant_is_plan('Pro') || tenant_is_plan('Lite+'))
+                            <li class="nav-item dropdown">
+                                <a class="nav-link fw-bold text-light" data-bs-toggle="dropdown" href="#"
+                                    role="button" aria-expanded="false">
+                                    Menu
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
+                                    @if (tenant_can('show_crm'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('crm.agenda') }}"><i
+                                                    class="bi bi-people-fill"></i> CRM</a>
+                                        </li>
+                                    @endif
 
-                                @if (tenant_can('handle_planning'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('planning.schedule') }}"><i
-                                                class="bi bi-calendar-fill"></i>
-                                            Planificación</a></li>
-                                @endif
+                                    @if (tenant_can('show_planning'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('planning.schedule') }}"><i
+                                                    class="bi bi-calendar-fill"></i>
+                                                Planificación</a></li>
+                                    @endif
 
-                                @if (tenant_can('handle_quality'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('quality.customers') }}"><i
-                                                class="bi bi-gear-fill"></i>
-                                            Calidad</a></li>
-                                @endif
+                                    @if (tenant_can('show_quality_control'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('quality.customers') }}"><i
+                                                    class="bi bi-gear-fill"></i>
+                                                Calidad</a></li>
+                                    @endif
 
-                                @if (tenant_can('handle_stock'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('stock.index') }}"><i
-                                                class="bi bi-box-fill"></i>
-                                            Almacen</a></li>
-                                @endif
+                                    @if (tenant_can('show_stock'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('stock.index') }}"><i
+                                                    class="bi bi-box-fill"></i>
+                                                Almacen</a></li>
+                                    @endif
 
-                                @if (tenant_can('handle_rh'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('rrhh', ['section' => 1]) }}"><i
-                                                class="bi bi-file-person-fill"></i>
-                                            RRHH</a></li>
-                                @endif
+                                    @if (tenant_can('show_rh'))
+                                        <li><a class="dropdown-item text-light"
+                                                href="{{ route('rrhh', ['section' => 1]) }}"><i
+                                                    class="bi bi-file-person-fill"></i>
+                                                RRHH</a></li>
+                                    @endif
 
-                                {{--  @if (tenant_can('handle_invoice'))
+                                    {{--  @if (tenant_can('handle_invoice'))
                                     <li><a class="dropdown-item text-light" href="{{ route('invoices.index') }}"><i
                                                 class="bi bi-stack"></i>
                                             Facturación</a></li>
-                                @endif--}}
+                                @endif --}}
 
-                                @if (tenant_can('handle_client_system'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('client.index') }}"><i
-                                                class="bi bi-person-workspace"></i>
-                                            Sistema de clientes</a></li>
-                                @endif
-                            </ul>
-                        </li>
-
+                                    @if (tenant_can('show_client_system'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('client.index') }}"><i
+                                                    class="bi bi-person-workspace"></i>
+                                                Sistema de clientes</a></li>
+                                    @endif
+                                </ul>
+                            </li>
+                        @endif
                         <li class="nav-item dropdown">
                             <a class="nav-link fw-bold text-light" href="#" role="button" data-bs-toggle="dropdown"
                                 aria-expanded="false">
@@ -304,21 +306,22 @@
                                 <i class="bi bi-gear-fill"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
-                                @if (tenant_can('handle_report_appearance'))
+                                @if (tenant_can('config_report_appearance'))
                                     <li><a class="dropdown-item text-light" href="{{ route('config.appearance') }}">
                                             <i class="bi bi-palette2"></i>
-                                            Configurar reporte</a>
+                                            Apariencia del reporte</a>
                                     </li>
                                 @else
-                                    <li><a class="dropdown-item text-light" href="#!">
-                                            No se tiene permiso a personalización</a>
+                                    <li><a class="dropdown-item text-light disabled" href="#!">
+                                            <i class="bi bi-lock"></i>
+                                            Sin acceso a personalización</a>
                                     </li>
                                 @endif
                             </ul>
                         </li>
                     @endif
 
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown me-2">
                         <a class="nav-link fw-bold header-auth fw-bold" data-bs-toggle="dropdown" href="#"
                             role="button" aria-expanded="false">
                             <i class="bi bi-person-fill"></i> {{ auth()->user()->name }}
@@ -333,13 +336,29 @@
                             </li>
                         </ul>
                     </li>
-                @else
+
                     <li class="nav-item">
-                        <a class="nav-link fw-bold text-light" href="{{ route('login') }}">
-                            <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                        <a class="nav-link active fw-bold text-success border rounded bg-white p-2" aria-current="page"
+                            href="#">
+                            Plan: 
+                            @if (tenant_is_plan('Pro'))
+                                <i class="bi bi-gem"></i>
+                            @elseif(tenant_is_plan('Lite+'))
+                                <i class="bi bi-star-fill"></i>
+                            @else
+                                <i class="bi bi-star-half"></i>
+                            @endif
+                            {{ tenant_plan() ?? 'Super admin' }}
                         </a>
                     </li>
-                @endauth
+                </ul>
+            @else
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-light" href="{{ route('login') }}">
+                        <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                    </a>
+                </li>
+            @endauth
             </ul>
         </div>
     </div>

@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'single.session' => \App\Http\Middleware\CheckSingleSession::class,
         'require.tenant' => \App\Http\Middleware\RequireTenant::class,
+        'validate.tenant.access' => \App\Http\Middleware\ValidateTenantAccess::class,
     ];
 }

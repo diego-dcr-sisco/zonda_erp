@@ -638,7 +638,7 @@ class ReportController extends Controller
         $navigation = [
             'Orden de servicio' => ['route' => route('order.edit', ['id' => $order->id]), 'permission' => null],
             'Reporte' => ['route' => route('report.review', ['id' => $order->id]), 'permission' => null],
-            'Seguimientos' => ['route' => route('tracking.create.order', ['id' => $order->id]), 'permission' => null],
+            'Seguimientos' => ['route' => route('tracking.create.order', ['id' => $order->id]), 'permission' => 'create_trackings'],
         ];
 
         $devices_products = DeviceProduct::where('order_id', $order->id)->get();
@@ -1334,6 +1334,19 @@ class ReportController extends Controller
                     $certificate->recommendations();
                     $certificate->photoEvidences();
                     $data = $certificate->getData();
+
+                    // Obtener la configuración de apariencia
+                    $appearance = AppearanceSetting::first();
+                    if (!$appearance) {
+                        $appearance = new AppearanceSetting();
+                    }
+
+                    // Agregar los colores y la ruta del logo a los datos
+                    $data['primaryColor'] = $appearance->primary_color;
+                    $data['secondaryColor'] = $appearance->secondary_color;
+                    $data['logoPath'] = $appearance->logo_path ?: 'images/logo_reporte.png';
+                    $data['watermarkPath'] = $appearance->watermark_path ?: 'images/watermark.png';
+                    $data['watermarkOpacity'] = $appearance->watermark_opacity ?: 0.1;
 
                     $filename = "certificado_orden_{$order_id}.pdf";
                     $filepath = $timer . '/' . $filename;

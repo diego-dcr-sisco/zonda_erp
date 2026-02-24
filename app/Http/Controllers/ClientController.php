@@ -221,11 +221,11 @@ class ClientController extends Controller
         $navigation = [
             'Carpetas' => [
                 'route' => route('client.system.index', ['path' => $path]),
-                'permission' => null
+                'permission' => 'consult_dirs'
             ],
             'Reportes' => [
                 'route' => route('client.reports'),
-                'permission' => null
+                'permission' => 'consult_reports'
             ]
         ];
 
@@ -843,11 +843,11 @@ class ClientController extends Controller
         $navigation = [
             'Carpetas' => [
                 'route' => route('client.system.index', ['path' => $path]),
-                'permission' => null
+                'permission' => 'consult_dirs'
             ],
             'Reportes' => [
                 'route' => route('client.reports'),
-                'permission' => null
+                'permission' => 'consult_reports'
             ]
         ];
 

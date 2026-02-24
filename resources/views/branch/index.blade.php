@@ -1,13 +1,15 @@
 @extends('layouts.app')
 @section('content')
-@php
-    $offset = ($branches->currentPage() - 1) * $branches->perPage();
-@endphp
+    @php
+        $offset = ($branches->currentPage() - 1) * $branches->perPage();
+    @endphp
     <div class="container-fluid">
         <div class="py-3">
+            @if (tenant_can('handle_branches'))
                 <a class="btn btn-primary btn-sm" href="{{ route('branch.create') }}">
                     <i class="bi bi-plus-lg fw-bold"></i> Crear sucursal
                 </a>
+            @endif
         </div>
 
         @include('messages.alert')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AppearanceSetting;
+use App\Tenancy\TenantManager;
 
 class ConfigurationController extends Controller
 {
@@ -12,11 +13,20 @@ class ConfigurationController extends Controller
     }
 
     public function appearance() {
-        // Obtener la configuración actual o crear una por defecto
+        // Obtener la configuración actual del tenant o crear una por defecto
+        // TenantScoped automáticamente filtra por tenant_id
         $appearance = AppearanceSetting::first();
         
+        // Obtener el tenant actual para las rutas
+        $tenant = TenantManager::getCurrentTenant();
+        $tenantFolder = $tenant ? $tenant->company_name : 'default';
+        
         if (!$appearance) {
+            // Crear una instancia temporal con valores por defecto (no se guarda en BD hasta que el usuario haga cambios)
             $appearance = new AppearanceSetting();
+            // Ajustar las rutas por defecto para usar la carpeta del tenant
+            $appearance->logo_path = "{$tenantFolder}/images/logo_reporte.png";
+            $appearance->watermark_path = "{$tenantFolder}/images/watermark.png";
         }
         
         return view('configuration.system.appearance', compact('appearance'));
@@ -30,43 +40,63 @@ class ConfigurationController extends Controller
             'secondary_color' => 'required|string|max:7',
         ]);
 
-        // Obtener o crear la configuración
+        // Obtener o crear la configuración del tenant
+        // TenantScoped asegura que solo se obtengan/creen registros del tenant actual
         $appearance = AppearanceSetting::first();
         
         if (!$appearance) {
             $appearance = new AppearanceSetting();
+            // El tenant_id se asigna automáticamente por TenantScoped al guardar
         }
 
+        // Obtener el tenant actual y su carpeta
+        $tenant = TenantManager::getCurrentTenant();
+        $tenantFolder = $tenant ? $tenant->company_name : 'default';
+        
+        // Asegurar que existe el directorio del tenant
+        $tenantImagesPath = public_path("{$tenantFolder}/images");
+        if (!file_exists($tenantImagesPath)) {
+            mkdir($tenantImagesPath, 0755, true);
+        }
+
+        // Manejar el reseteo del logo
+        if ($request->has('reset_logo')) {
+            $appearance->logo_path = "{$tenantFolder}/images/logo_reporte.png";
+        }
         // Manejar la carga del logo si se proporciona
-        if ($request->hasFile('logo')) {
-            $logoPath = public_path('images/logo_reporte.png');
+        elseif ($request->hasFile('logo')) {
+            $logoPath = public_path("{$tenantFolder}/images/logo_reporte.png");
 
             // Si existe el logo actual, eliminarlo
             if (file_exists($logoPath)) {
-                unlink($logoPath);
+                @unlink($logoPath);
             }
 
             // Guardar el nuevo logo
-            $request->file('logo')->move(public_path('images'), 'logo_reporte.png');
+            $request->file('logo')->move(public_path("{$tenantFolder}/images"), 'logo_reporte.png');
             
             // Guardar la ruta en la base de datos
-            $appearance->logo_path = 'images/logo_reporte.png';
+            $appearance->logo_path = "{$tenantFolder}/images/logo_reporte.png";
         }
 
+        // Manejar el reseteo de la marca de agua
+        if ($request->has('reset_watermark')) {
+            $appearance->watermark_path = "{$tenantFolder}/images/watermark.png";
+        }
         // Manejar la carga de la marca de agua si se proporciona
-        if ($request->hasFile('watermark')) {
-            $watermarkPath = public_path('images/watermark.png');
+        elseif ($request->hasFile('watermark')) {
+            $watermarkPath = public_path("{$tenantFolder}/images/watermark.png");
 
             // Si existe la marca de agua actual, eliminarla
             if (file_exists($watermarkPath)) {
-                unlink($watermarkPath);
+                @unlink($watermarkPath);
             }
 
             // Guardar la nueva marca de agua
-            $request->file('watermark')->move(public_path('images'), 'watermark.png');
+            $request->file('watermark')->move(public_path("{$tenantFolder}/images"), 'watermark.png');
 
             // Guardar la ruta en la base de datos
-            $appearance->watermark_path = 'images/watermark.png';
+            $appearance->watermark_path = "{$tenantFolder}/images/watermark.png";
         }
 
         // Actualizar los colores
@@ -79,6 +109,6 @@ class ConfigurationController extends Controller
         $appearance->save();
 
 
-        return redirect()->route('config.appearance')->with('success', 'Apariencia actualizada correctamente.');
+        return redirect()->route('config.appearance')->with('success', 'La apariencia del reporte se actualizó correctamente. Los cambios se aplicarán al próximo reporte generado.');
     }
 }

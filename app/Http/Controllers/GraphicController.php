@@ -22,19 +22,19 @@ use Illuminate\Support\Facades\Auth;
 class GraphicController extends Controller
 {
     private $colors = [
-        'DeepSpaceBlue'     => '#012640',
-        'DeepNavy'          => '#02265A',
-        'TrueCobalt'        => '#0A2986',
-        'IndigoVelvet'      => '#512A87',
-        'VelvetPurple'      => '#773774',
-        'DustyMauve'        => '#B74453',
-        'FieryTerracotta'   => '#DE523B',
+        'DeepSpaceBlue' => '#012640',
+        'DeepNavy' => '#02265A',
+        'TrueCobalt' => '#0A2986',
+        'IndigoVelvet' => '#512A87',
+        'VelvetPurple' => '#773774',
+        'DustyMauve' => '#B74453',
+        'FieryTerracotta' => '#DE523B',
     ];
 
     // Colores estándar para tipos de servicio (Doméstico, Comercial, Industrial)
     private $service_colors = [
-        'Domestico'  => '#0A2986',  // True Cobalt
-        'Comercial'  => '#512A87',  // Indigo Velvet
+        'Domestico' => '#0A2986',  // True Cobalt
+        'Comercial' => '#512A87',  // Indigo Velvet
         'Industrial' => '#DE523B',  // Fiery Terracotta
     ];
 
@@ -73,29 +73,29 @@ class GraphicController extends Controller
 
     public function index(Request $request)
     {
-        $actualYear  = $request->input('year', Carbon::now()->year);
+        $actualYear = $request->input('year', Carbon::now()->year);
         $actualMonth = $request->input('month', Carbon::now()->month);
 
         // Estadisticas de clientes
-        $anualCustomersChart  = $this->totalCustomersByYear($actualYear);
-        $chart                = $this->newCustomers();                                       // Nuevos clientes por mes
-        $categoryChart        = $this->customersByYear();                                    // Total de clientes por categoría
-        $leadsChart           = $this->newLeadsByMonth($request, $actualYear, $actualMonth); // Leads captados en el mes
+        $anualCustomersChart = $this->totalCustomersByYear($actualYear);
+        $chart = $this->newCustomers();                                       // Nuevos clientes por mes
+        $categoryChart = $this->customersByYear();                                    // Total de clientes por categoría
+        $leadsChart = $this->newLeadsByMonth($request, $actualYear, $actualMonth); // Leads captados en el mes
         $monthlyServicesChart = $this->monthlyServices();                                    // Tipos de servicios captados por mes
-        $pestsDonutChart      = $this->pestsDonutChart();                                    // Plagas más presentadas
+        $pestsDonutChart = $this->pestsDonutChart();                                    // Plagas más presentadas
 
         // Estadisticas de calidad
-        $adminUsers         = Administrative::all();
+        $adminUsers = Administrative::all();
         $orderServicesChart = $this->serviceOrders(); // Ordenes de servicio por admin
 
         $navigation = [
-            'Agenda'               => ['route' => route('crm.agenda'), 'permission' => null],
-            'Clientes'             => ['route' => route('customer.index'), 'permission' => null],
-            'Sedes'                => ['route' => route('customer.index.sedes'), 'permission' => null],
-            'Clientes potenciales' => ['route' => route('customer.index.leads'), 'permission' => null],
-            'Estadisticas'         => ['route' => route('crm.chart.dashboard'), 'permission' => null],
-            'Ordenes de servicio'  => ['route' => route('order.index'), 'permission' => null],
-            'Facturacion'          => ['route' => route('invoices.index'), 'permission' => null],
+            'Agenda' => ['route' => route('crm.agenda'), 'permission' => 'show_crm'],
+            'Clientes' => ['route' => route('customer.index'), 'permission' => 'handle_customers'],
+            'Sedes' => ['route' => route('customer.index.sedes'), 'permission' => 'show_sedes'],
+            'Clientes potenciales' => ['route' => route('customer.index.leads'), 'permission' => 'handle_leads'],
+            'Ordenes de servicio' => ['route' => route('order.index'), 'permission' => 'handle_orders'],
+            'Estadisticas' => ['route' => route('crm.chart.dashboard'), 'permission' => 'show_crm'],
+            //'Facturacion'          => ['route' => route('invoices.index'), 'permission' => null],
         ];
 
         return view('crm.charts.dashboard', compact(
@@ -118,7 +118,7 @@ class GraphicController extends Controller
 
     public function totalCustomersByYear($year = null)
     {
-        $year          = $year ?? Carbon::now()->year; // Usa el año proporcionado o el año actual por defecto
+        $year = $year ?? Carbon::now()->year; // Usa el año proporcionado o el año actual por defecto
         $monthlyTotals = [];
 
         for ($month = 1; $month <= 12; $month++) {
@@ -171,7 +171,7 @@ class GraphicController extends Controller
 
     public function newLeadsByMonth(Request $request, $year = null, $month = null)
     {
-        $year  = $year ?? $request->input('year', Carbon::now()->year);    // Usa el año proporcionado o el año actual por defecto
+        $year = $year ?? $request->input('year', Carbon::now()->year);    // Usa el año proporcionado o el año actual por defecto
         $month = $month ?? $request->input('month', Carbon::now()->month); // Usa el mes proporcionado o el mes actual por defecto
 
         $domestics = Lead::whereMonth('created_at', $month)
@@ -191,24 +191,24 @@ class GraphicController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'title'   => [
+                'title' => [
                     'text' => '',
                 ],
                 'tooltip' => [
                     'trigger' => 'axis',
                 ],
-                'xAxis'   => [
+                'xAxis' => [
                     'type' => 'category',
                     'data' => ['Domésticos', 'Comerciales', 'Industrial/Planta'],
                 ],
-                'yAxis'   => [
+                'yAxis' => [
                     'type' => 'value',
                 ],
-                'series'  => [
+                'series' => [
                     [
-                        'name'      => 'Leads',
-                        'type'      => 'bar',
-                        'data'      => [$domestics, $comercials, $industrials],
+                        'name' => 'Leads',
+                        'type' => 'bar',
+                        'data' => [$domestics, $comercials, $industrials],
                         'itemStyle' => [
                             'color' => ['#0A2986', '#512A87', '#DE523B'],
                         ],
@@ -232,7 +232,7 @@ class GraphicController extends Controller
     public function newCustomers()
     {
         $labels = ['Domesticos', 'Comerciales', 'Industrial/Planta'];
-        $api    = route('crm.chart.customers');
+        $api = route('crm.chart.customers');
 
         $chart = new SampleChart;
         $chart->labels($labels)->load($api);
@@ -243,7 +243,7 @@ class GraphicController extends Controller
     public function newCustomersDataset()
     {
         $month = Carbon::now()->month;
-        $year  = Carbon::now()->year;
+        $year = Carbon::now()->year;
 
         // Filtrar los datos por mes y año
         $domestics = Customer::whereMonth('created_at', $month)
@@ -274,11 +274,11 @@ class GraphicController extends Controller
     public function refreshNewCustomers(Request $request)
     {
         $month = $request->input('month');
-        $year  = $request->input('year');
+        $year = $request->input('year');
 
         $request->validate([
             'month' => 'required|integer|min:1|max:12',
-            'year'  => 'required|integer|min:2000|max:' . Carbon::now()->year,
+            'year' => 'required|integer|min:2000|max:' . Carbon::now()->year,
         ]);
 
         $domestics = Customer::whereMonth('created_at', $month)
@@ -325,7 +325,7 @@ class GraphicController extends Controller
             'Noviembre',
             'Diciembre',
         ];
-        $api   = route('crm.chart.customersByYear');
+        $api = route('crm.chart.customersByYear');
         $chart = new SampleChart;
         $chart->labels($labels)->load($api);
 
@@ -334,9 +334,9 @@ class GraphicController extends Controller
 
     public function newCustomersByYear()
     {
-        $year        = Carbon::now()->year;
-        $domestics   = [];
-        $comercials  = [];
+        $year = Carbon::now()->year;
+        $domestics = [];
+        $comercials = [];
         $industrials = [];
 
         for ($month = 1; $month <= 12; $month++) {
@@ -389,9 +389,9 @@ class GraphicController extends Controller
 
     public function refreshNewCustomersByYear(Request $request)
     {
-        $year        = $request->input('year');
-        $domestics   = [];
-        $comercials  = [];
+        $year = $request->input('year');
+        $domestics = [];
+        $comercials = [];
         $industrials = [];
 
         for ($month = 1; $month <= 12; $month++) {
@@ -447,8 +447,8 @@ class GraphicController extends Controller
     public function monthlyLeads()
     {
         $labels = ['Domesticos', 'Comerciales', 'Industrial/Planta'];
-        $api    = route('crm.chart.monthlyLeads');
-        $chart  = new MonthlyLeadsChart;
+        $api = route('crm.chart.monthlyLeads');
+        $chart = new MonthlyLeadsChart;
         $chart->labels($labels)->load($api);
 
         return $chart;
@@ -457,7 +457,7 @@ class GraphicController extends Controller
     public function leadsDataset()
     {
         $month = Carbon::now()->month;
-        $year  = Carbon::now()->year;
+        $year = Carbon::now()->year;
 
         $domestics = Lead::whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
@@ -488,7 +488,7 @@ class GraphicController extends Controller
     public function refreshLeadsDataset(Request $request)
     {
         $month = $request->input('month');
-        $year  = $request->input('year');
+        $year = $request->input('year');
 
         $domestics = Lead::whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
@@ -519,7 +519,7 @@ class GraphicController extends Controller
     public function leadsByServiceType(Request $request)
     {
         $month = $request->input('month', Carbon::now()->month);
-        $year  = $request->input('year', Carbon::now()->year);
+        $year = $request->input('year', Carbon::now()->year);
 
         $domestics = Lead::whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
@@ -537,27 +537,27 @@ class GraphicController extends Controller
             ->count();
 
         return response()->json([
-            'title'   => [
+            'title' => [
                 'text' => 'Leads por Tipo de Servicio',
             ],
             'tooltip' => [
                 'trigger' => 'axis',
             ],
-            'legend'  => [
+            'legend' => [
                 'data' => ['Domésticos', 'Comerciales', 'Industriales'],
             ],
-            'xAxis'   => [
+            'xAxis' => [
                 'type' => 'category',
                 'data' => ['Domésticos', 'Comerciales', 'Industriales'],
             ],
-            'yAxis'   => [
+            'yAxis' => [
                 'type' => 'value',
             ],
-            'series'  => [
+            'series' => [
                 [
-                    'name'      => 'Leads',
-                    'type'      => 'bar',
-                    'data'      => [$domestics, $comercials, $industrials],
+                    'name' => 'Leads',
+                    'type' => 'bar',
+                    'data' => [$domestics, $comercials, $industrials],
                     'itemStyle' => [
                         'color' => function ($params) {
                             $colors = ['#FFA000', '#0D47A1', '#D32F2F'];
@@ -574,8 +574,8 @@ class GraphicController extends Controller
     public function monthlyServices()
     {
         $labels = ['Domesticos', 'Comerciales', 'Industrial/Planta'];
-        $api    = route('crm.chart.monthlyServices');
-        $chart  = new SampleChart;
+        $api = route('crm.chart.monthlyServices');
+        $chart = new SampleChart;
         $chart->labels($labels)->load($api);
 
         return $chart;
@@ -584,7 +584,7 @@ class GraphicController extends Controller
     public function monthlyServicesDataset()
     {
         $month = Carbon::now()->month;
-        $year  = Carbon::now()->year;
+        $year = Carbon::now()->year;
 
         $domestics = Order::whereMonth('programmed_date', $month)
             ->whereYear('programmed_date', $year)
@@ -620,7 +620,7 @@ class GraphicController extends Controller
     public function refreshMonthlyServices(Request $request)
     {
         $month = $request->input('month');
-        $year  = $request->input('year');
+        $year = $request->input('year');
 
         $domestics = Order::whereMonth('programmed_date', $month)
             ->whereYear('programmed_date', $year)
@@ -658,18 +658,18 @@ class GraphicController extends Controller
     public function servicesCompletedByMonth(Request $request)
     {
         $year = $request->input('year', Carbon::now()->year);
-        
+
         $monthlyServices = [];
         $monthLabels = [];
 
         for ($month = 1; $month <= 12; $month++) {
             $monthLabels[] = Carbon::create()->month($month)->locale('es')->monthName;
-            
+
             // Contar todas las órdenes generadas en el mes
             $servicesCount = Order::whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->count();
-            
+
             $monthlyServices[] = $servicesCount;
         }
 
@@ -690,8 +690,8 @@ class GraphicController extends Controller
     public function pestsDonutChart()
     {
         $labels = ['Plagas'];
-        $api    = route('crm.chart.pestsDonut');
-        $chart  = new SampleChart;
+        $api = route('crm.chart.pestsDonut');
+        $chart = new SampleChart;
         $chart->labels($labels)->load($api);
 
         return $chart;
@@ -700,7 +700,7 @@ class GraphicController extends Controller
     public function pestsDonutDataset()
     {
         $month = Carbon::now()->month;
-        $year  = Carbon::now()->year;
+        $year = Carbon::now()->year;
 
         $pestsData = DB::table('device_pest')
             ->join('order', 'device_pest.order_id', '=', 'order.id')
@@ -728,7 +728,7 @@ class GraphicController extends Controller
     public function refreshPestsDonut(Request $request)
     {
         $month = $request->input('month');
-        $year  = $request->input('year');
+        $year = $request->input('year');
 
         $pestsData = DB::table('device_pest')
             ->join('order', 'device_pest.order_id', '=', 'order.id')
@@ -758,8 +758,8 @@ class GraphicController extends Controller
     public function serviceOrders()
     {
         $labels = ['Pendientes', 'Finalizadas', 'Aprovadas'];
-        $api    = route('crm.chart.serviceOrders');
-        $chart  = new SampleChart;
+        $api = route('crm.chart.serviceOrders');
+        $chart = new SampleChart;
         $chart->labels($labels)->load($api);
 
         return $chart;
@@ -769,7 +769,7 @@ class GraphicController extends Controller
     {
         // ultimo mes
         $start = Carbon::now()->startOfMonth()->startOfDay();
-        $end   = Carbon::now()->endOfMonth()->endOfDay();
+        $end = Carbon::now()->endOfMonth()->endOfDay();
 
         $admin_id = Auth::user()->simpleRole;
 
@@ -789,7 +789,7 @@ class GraphicController extends Controller
             ->count();
 
         $counts = [$pending, $finished, $approved];
-        $chart  = new SampleChart;
+        $chart = new SampleChart;
         // pendientes - amarillo(warning), finalizadas - azul(primary), aprovadas - verde(success)
         $chart->labels(['Pendientes', 'Finalizadas', 'Aprovadas']);
         $chart->dataset('Ordenes de Servicio', 'doughnut', $counts)
@@ -801,9 +801,9 @@ class GraphicController extends Controller
 
     public function refreshServiceOrders(Request $request)
     {
-        $admin_id  = $request->input('admin_user');
+        $admin_id = $request->input('admin_user');
         $startDate = $request->input('start_date');
-        $endDate   = $request->input('end_date');
+        $endDate = $request->input('end_date');
 
         $pending = Order::where('status_id', 1)
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -821,7 +821,7 @@ class GraphicController extends Controller
             ->count();
 
         $counts = [$pending, $finished, $approved];
-        $chart  = new SampleChart;
+        $chart = new SampleChart;
         $chart->labels(['Pendientes', 'Finalizadas', 'Aprovadas']);
         $chart->dataset('Ordenes de Servicio', 'doughnut', $counts)
             ->backgroundColor(['#B74453', '#0A2986', '#512A87'])
@@ -841,7 +841,7 @@ class GraphicController extends Controller
     public function orders()
     {
         $labels = ['Domesticos', 'Comerciales'];
-        $api    = url(route('crm.chart.orders'));
+        $api = url(route('crm.chart.orders'));
 
         $chart = new SampleChart;
         $chart->labels($labels)->load($api);
@@ -850,7 +850,7 @@ class GraphicController extends Controller
 
     public function ordersDataset()
     {
-        $month  = Carbon::now()->month;
+        $month = Carbon::now()->month;
         $counts = [0, 0];
         $orders = Order::whereMonth('programmed_date', $month)->get();
         foreach ($orders as $order) {
@@ -870,7 +870,7 @@ class GraphicController extends Controller
 
     public function refreshOrders(Request $request)
     {
-        $month  = $request->input('month');
+        $month = $request->input('month');
         $counts = [];
         $orders = Order::whereMonth('programmed_date', $month)->get();
         foreach ($orders as $order) {
@@ -893,8 +893,8 @@ class GraphicController extends Controller
     public function orderTypes($service_type)
     {
         $labels = ['Agendados', 'Totales'];
-        $api    = url(route('crm.chart.ordertypes', ['service_type' => $service_type]));
-        $chart  = new SampleChart;
+        $api = url(route('crm.chart.ordertypes', ['service_type' => $service_type]));
+        $chart = new SampleChart;
         $chart->labels($labels)->load($api);
 
         return $chart;
@@ -902,11 +902,11 @@ class GraphicController extends Controller
 
     public function orderTypesDataset($service_type)
     {
-        $month       = Carbon::now()->month;
-        $counts      = [0, 0];
+        $month = Carbon::now()->month;
+        $counts = [0, 0];
         $customerIds = [];
 
-        $orders    = Order::whereMonth('programmed_date', $month)->get();
+        $orders = Order::whereMonth('programmed_date', $month)->get();
         $customers = Customer::whereMonth('created_at', $month)->where('service_type_id', $service_type)->where('general_sedes', 0)->count();
 
         foreach ($orders as $order) {
@@ -928,10 +928,10 @@ class GraphicController extends Controller
     {
         $month = $request->input('month');
 
-        $counts      = [0, 0];
+        $counts = [0, 0];
         $customerIds = [];
 
-        $orders    = Order::whereMonth('programmed_date', $month)->get();
+        $orders = Order::whereMonth('programmed_date', $month)->get();
         $customers = Customer::whereMonth('created_at', $month)->where('service_type_id', $service_type)->where('general_sedes', 0)->count();
 
         foreach ($orders as $order) {
@@ -959,7 +959,7 @@ class GraphicController extends Controller
     {
         // se usa el mes actual
         $labels = $this->months;
-        $api    = url(route('stock.analytics.charts.productuse.dataset'));
+        $api = url(route('stock.analytics.charts.productuse.dataset'));
 
         $chart = new SampleChart;
         $chart->labels($labels)->load($api);
@@ -972,19 +972,19 @@ class GraphicController extends Controller
         // Obtener el producto seleccionado desde la request, por defecto el primero
         $productId = request()->get('product_id');
 
-        if (! $productId) {
-            $product   = ProductCatalog::orderBy('name')->first();
+        if (!$productId) {
+            $product = ProductCatalog::orderBy('name')->first();
             $productId = $product ? $product->id : null;
         } else {
             $product = ProductCatalog::find($productId);
         }
 
-        if (! $product) {
+        if (!$product) {
             return response()->json(['error' => 'Producto no encontrado'], 404);
         }
 
         // Inicializar arrays
-        $inputs  = [];
+        $inputs = [];
         $outputs = [];
 
         $currentYear = Carbon::now()->year;
@@ -1011,7 +1011,7 @@ class GraphicController extends Controller
                 ->where('warehouse_movements.is_active', 1)
                 ->sum('movement_products.amount');
 
-            $inputs[]  = (float) $inputSum;
+            $inputs[] = (float) $inputSum;
             $outputs[] = (float) $outputSum;
         }
 
@@ -1037,7 +1037,7 @@ class GraphicController extends Controller
     public function stockMovements()
     {
         $labels = MovementType::all()->pluck('name');
-        $api    = url(route('stock.analytics.charts.stockmovements.dataset'));
+        $api = url(route('stock.analytics.charts.stockmovements.dataset'));
 
         $chart = new SampleChart;
         $chart->labels($labels)->load($api);
@@ -1047,8 +1047,8 @@ class GraphicController extends Controller
 
     public function datasetStockMovements()
     {
-        $counts         = [];
-        $warehouse      = Warehouse::find(1);
+        $counts = [];
+        $warehouse = Warehouse::find(1);
         $movement_types = MovementType::all();
         foreach ($movement_types as $movement_type) {
             $counts[] = WarehouseMovement::where('warehouse_id', 1)->where('movement_id', $movement_type->id)->count();
@@ -1063,14 +1063,14 @@ class GraphicController extends Controller
     public function refreshStockMovements(Request $request)
     {
         $warehouseId = $request->get('warehouseId') ?? $request->get('warehouse_id');
-        $warehouse   = Warehouse::find($warehouseId);
+        $warehouse = Warehouse::find($warehouseId);
 
-        if (! $warehouse) {
+        if (!$warehouse) {
             return response()->json(['error' => 'Almacén no encontrado'], 404);
         }
 
         $movement_types = MovementType::all();
-        $counts         = [];
+        $counts = [];
 
         foreach ($movement_types as $movement_type) {
             $count = WarehouseMovement::where(function ($query) use ($warehouseId) {
@@ -1096,7 +1096,7 @@ class GraphicController extends Controller
     public function inventoryByWarehouse()
     {
         $labels = Warehouse::where('is_active', 1)->pluck('name');
-        $api    = url(route('stock.analytics.charts.inventory.dataset'));
+        $api = url(route('stock.analytics.charts.inventory.dataset'));
 
         $chart = new SampleChart;
         $chart->labels($labels)->load($api);
@@ -1107,7 +1107,7 @@ class GraphicController extends Controller
     public function mostUsedProductsByMonth()
     {
         $labels = $this->months;
-        $api    = url(route('stock.analytics.charts.mostused.dataset'));
+        $api = url(route('stock.analytics.charts.mostused.dataset'));
 
         $chart = new SampleChart;
         $chart->labels($labels)->load($api);
@@ -1117,8 +1117,8 @@ class GraphicController extends Controller
 
     public function datasetMostUsedProductsByMonth()
     {
-        $year        = request()->get('year', Carbon::now()->year);
-        $limit       = request()->get('limit', 5); // Top 5 productos por defecto
+        $year = request()->get('year', Carbon::now()->year);
+        $limit = request()->get('limit', 5); // Top 5 productos por defecto
         $warehouseId = request()->get('warehouse_id');
 
         // Obtener los productos más usados en el año
@@ -1237,7 +1237,7 @@ class GraphicController extends Controller
             $comercials[] = Customer::whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->where('service_type_id', 2)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNotNull('general_sedes')
                         ->where('general_sedes', '!=', 0);
                 })
@@ -1246,7 +1246,7 @@ class GraphicController extends Controller
             $industrials[] = Customer::whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->where('service_type_id', 3)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNotNull('general_sedes')
                         ->where('general_sedes', '!=', 0);
                 })
@@ -1255,8 +1255,18 @@ class GraphicController extends Controller
 
         return response()->json([
             'labels' => [
-                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+                'Enero',
+                'Febrero',
+                'Marzo',
+                'Abril',
+                'Mayo',
+                'Junio',
+                'Julio',
+                'Agosto',
+                'Septiembre',
+                'Octubre',
+                'Noviembre',
+                'Diciembre',
             ],
             'domestics' => $domestics,
             'comercials' => $comercials,
@@ -1293,8 +1303,18 @@ class GraphicController extends Controller
 
         return response()->json([
             'labels' => [
-                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+                'Enero',
+                'Febrero',
+                'Marzo',
+                'Abril',
+                'Mayo',
+                'Junio',
+                'Julio',
+                'Agosto',
+                'Septiembre',
+                'Octubre',
+                'Noviembre',
+                'Diciembre',
             ],
             'domestics' => $domestics,
             'comercials' => $comercials,
@@ -1381,14 +1401,24 @@ class GraphicController extends Controller
                 ->whereMonth('next_date', $month)
                 ->whereYear('next_date', $year)
                 ->count();
-            
+
             $trackings[] = $count;
         }
 
         return response()->json([
             'labels' => [
-                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+                'Enero',
+                'Febrero',
+                'Marzo',
+                'Abril',
+                'Mayo',
+                'Junio',
+                'Julio',
+                'Agosto',
+                'Septiembre',
+                'Octubre',
+                'Noviembre',
+                'Diciembre',
             ],
             'data' => $trackings,
         ]);

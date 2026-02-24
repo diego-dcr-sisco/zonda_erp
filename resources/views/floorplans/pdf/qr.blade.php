@@ -33,11 +33,18 @@
             display: inline-block;
             vertical-align: top;
             position: relative;
+        }
 
-            background-image: url("file://{{ public_path('images/zonda/trans_watermark.png') }}");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 20%;
+        .watermark {
+            position: absolute;
+            width: 90%;
+            text-align: center;
+            z-index: -1;
+        }
+
+        .watermark img {
+            width: 80px;
+            height: auto;
         }
 
         .device-card:nth-child(odd) {
@@ -47,6 +54,8 @@
         .card-content {
             display: table;
             width: 100%;
+            position: relative;
+            z-index: 1;
         }
 
         .device-text {
@@ -101,10 +110,27 @@
         @endif
 
         <div class="device-card">
+            <div class="watermark"
+                style="
+                @if (isset($watermarkOpacity)) opacity: {{ $watermarkOpacity }};
+                @else
+                opacity: 0.1; @endif
+            ">
+                @if (isset($watermarkPath) && file_exists(public_path($watermarkPath)))
+                    <img src="file://{{ public_path($watermarkPath) }}">
+                @else
+                    <img src="file://{{ public_path('images/zonda/trans_watermark.png') }}">
+                @endif
+            </div>
             <div class="card-content">
                 <div class="device-text">
                     <div class="logo">
-                        <img src="file://{{ public_path('images/zonda/landscape_logo.png') }}" style="width:70%; margin: 0;">
+                        @if (isset($logoPath) && file_exists(public_path($logoPath)))
+                            <img src="file://{{ public_path($logoPath) }}" style="width:70%; margin: 0;">
+                        @else
+                            <img src="file://{{ public_path('images/zonda/landscape_logo.png') }}"
+                                style="width:70%; margin: 0;">
+                        @endif
                     </div>
                     <div
                         style="font-size: 15px;

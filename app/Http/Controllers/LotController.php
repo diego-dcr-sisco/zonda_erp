@@ -10,6 +10,7 @@ use App\Models\MovementProduct;
 
 use App\Models\WarehouseMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
 use Exception;
@@ -20,27 +21,27 @@ class LotController extends Controller
     public $navigation = [
         'Almacenes' => [
             'route' => '/stock',
-            'permission' => null
+            'permission' => 'show_stocks'
         ],
         'Lotes' => [
             'route' => '/lot/index',
-            'permission' => null
+            'permission' => 'create_lots'
         ],
         'Productos' => [
             'route' => '/products',
-            'permission' => null
+            'permission' => 'create_products'
         ],
         'Movimientos' => [
             'route' => '/stock/movements',
-            'permission' => null
+            'permission' => 'create_stocks'
         ],
         'Consumos en ordenes' => [
             'route' => '/stock/movements/orders',
-            'permission' => null
+            'permission' => 'create_stocks'
         ],
         'Consumos' => [
             'route' => '/consumptions/',
-            'permission' => null
+            'permission' => 'create_stocks'
         ],
         /*'Zonas' => [
             'route' => '/customer-zones',
@@ -139,7 +140,7 @@ class LotController extends Controller
             'warehouse_id' => null,
             'destination_warehouse_id' => $request->input('warehouse_id'),
             'movement_id' => 2,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'date' => now()->format('Y-m-d'),
             'time' => now()->format('H:i:s'),
             'observations' => null,

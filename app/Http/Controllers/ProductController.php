@@ -41,27 +41,27 @@ class ProductController extends Controller
     public $navigation = [
         'Almacenes' => [
             'route' => '/stock',
-            'permission' => null
+            'permission' => 'show_stocks'
         ],
         'Lotes' => [
             'route' => '/lot/index',
-            'permission' => null
+            'permission' => 'create_lots'
         ],
         'Productos' => [
             'route' => '/products',
-            'permission' => null
+            'permission' => 'handle_products'
         ],
         'Movimientos' => [
             'route' => '/stock/movements',
-            'permission' => null
+            'permission' => 'handle_stock'
         ],
         'Consumos en ordenes' => [
             'route' => '/stock/movements/orders',
-            'permission' => null
+            'permission' => 'handle_stock'
         ],
         'Consumos' => [
             'route' => '/consumptions/',
-            'permission' => null
+            'permission' => 'handle_stock'
         ],
         // 'Zonas' => [
         //     'route' => '/customer-zones',
@@ -90,31 +90,31 @@ class ProductController extends Controller
         $navigation = [
             'Producto' => [
                 'route' => route('product.edit', ['id' => $product->id]),
-                'permission' => null
+                'permission' => 'handle_products'
             ],
             'Métodos de aplicación' => [
                 'route' => route('product.edit.appMethods', ['id' => $product->id]),
-                'permission' => null
+                'permission' => 'handle_products'
             ],
             'Plagas' => [
                 'route' => route('product.edit.pests', ['id' => $product->id]),
-                'permission' => null
+                'permission' => 'handle_products'
             ],
             'Insumos' => [
                 'route' => route('product.edit.inputs', ['id' => $product->id]),
-                'permission' => null
+                'permission' => 'handle_products'
             ],
             'Archivos' => [
                 'route' => route('product.edit.files', ['id' => $product->id]),
-                'permission' => null
+                'permission' => 'handle_products'
             ],
             'Tratamientos' => [
                 'route' => route('product.edit.treatment', ['id' => $product->id]),
-                'permission' => null
+                'permission' => 'handle_products'
             ],
             'Movimientos' => [
                 'route' => route('product.edit.movements', ['id' => $product->id]),
-                'permission' => null
+                'permission' => 'show_stocks'
             ]
         ];
 

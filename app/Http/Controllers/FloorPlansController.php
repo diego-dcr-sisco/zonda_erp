@@ -78,27 +78,27 @@ class FloorPlansController extends Controller
         $navigation = [
             'Plano' => [
                 'route' => route('floorplan.edit', ['id' => $floorplan->id]),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],
             'Dispositivos' => [
                 'route' => route('floorplan.devices', ['id' => $floorplan->id, 'version' => $floorplan->lastVersion() ?? '0']),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],
             'QRs' => [
                 'route' => route('floorplan.qr', ['id' => $floorplan->id]),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],
             /*'Geolocalización' => [
                 'route' => route('floorplan.geolocation', ['id' => $floorplan->id]),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],*/
             'Áreas de aplicación' => [
                 'route' => route('customer.show.sede.areas', ['id' => $floorplan->customer_id]),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],
             'Estadisticas' => [
                 'route' => route('floorplan.graphic.incidents', ['id' => $floorplan->id]),
-                'permission' => 'handle_floorplans'
+                'permission' => 'create_floorplans'
             ],
         ];
         return $navigation;
@@ -869,6 +869,21 @@ class FloorPlansController extends Controller
         }
 
         $data['devices'] = $devices_data;
+
+        // Obtener la configuración de apariencia del tenant
+        $appearance = \App\Models\AppearanceSetting::first();
+        if (!$appearance) {
+            $appearance = new \App\Models\AppearanceSetting();
+            // Obtener el tenant para las rutas por defecto
+            $tenant = \App\Tenancy\TenantManager::getCurrentTenant();
+            $tenantFolder = $tenant ? $tenant->company_name : 'default';
+            $appearance->logo_path = "{$tenantFolder}/images/logo_reporte.png";
+            $appearance->watermark_path = "{$tenantFolder}/images/watermark.png";
+        }
+        
+        $data['logoPath'] = $appearance->logo_path ?: 'images/logo_reporte.png';
+        $data['watermarkPath'] = $appearance->watermark_path ?: 'images/watermark.png';
+        $data['watermarkOpacity'] = $appearance->watermark_opacity ?: 0.1;
 
         $pdf = Pdf::loadView('floorplans.pdf.qr', $data);
         $pdf_name = 'QR_' . $floorplan->filename . '_' . $floorplan->customer->name;

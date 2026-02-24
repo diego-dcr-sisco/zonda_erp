@@ -10,6 +10,10 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder {
 	public function run(): void {
 		$this->call([
+			// Primero los planes (necesarios para otras tablas)
+			PlanSeeder::class,
+			
+			// Luego el resto de seeders base
 			ZoneTypeSeeder::class,
 			ExecFrequencySeeder::class,
 			DaysWeekSeeder::class,
@@ -23,7 +27,14 @@ class DatabaseSeeder extends Seeder {
 			CompanySeeder::class,
 			ContractTypeSeeder::class,
 			RoleSeeder::class,
+			
+			// Permisos de tenant
 			TenantPermissionSeeder::class,
+			
+			// Mapeo de permisos por plan
+			PlanPermissionMappingSeeder::class,
+			
+			// Resto de seeders
 			PestCategorySeeder::class,
 			ApplicationMethodSeeder::class,
 			ServiceTypeSeeder::class,

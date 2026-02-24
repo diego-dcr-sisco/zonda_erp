@@ -101,3 +101,103 @@ if (!function_exists('tenant_can_any')) {
         return false;
     }
 }
+
+/**
+ * Obtiene el nombre del plan del tenant actual
+ * 
+ * @return string|null Nombre del plan ('Lite', 'Lite+', 'Pro') o null si no hay tenant
+ */
+if (!function_exists('tenant_plan')) {
+    function tenant_plan(): ?string
+    {
+        if (!auth()->check()) {
+            return null;
+        }
+
+        $user = auth()->user();
+        
+        // Si no tiene tenant_id, no tiene plan
+        if (!$user->tenant_id) {
+            return null;
+        }
+
+        // Obtener el tenant y su plan
+        $tenant = \App\Models\Tenant::find($user->tenant_id);
+        
+        if (!$tenant || !$tenant->plan_id) {
+            return null;
+        }
+
+        $plan = \App\Models\Plan::find($tenant->plan_id);
+        
+        return $plan ? $plan->name : null;
+    }
+}
+
+/**
+ * Verifica si el tenant tiene un plan específico
+ * 
+ * @param string $planName Nombre del plan a verificar (case-insensitive)
+ * @return bool
+ */
+if (!function_exists('tenant_is_plan')) {
+    function tenant_is_plan(string $planName): bool
+    {
+        $currentPlan = tenant_plan();
+        
+        if (!$currentPlan) {
+            return false;
+        }
+
+        return strtolower($currentPlan) === strtolower($planName);
+    }
+}
+
+/**
+ * Verifica si el tenant tiene alguno de los planes especificados
+ * 
+ * @param array $planNames Array de nombres de planes
+ * @return bool
+ */
+if (!function_exists('tenant_is_any_plan')) {
+    function tenant_is_any_plan(array $planNames): bool
+    {
+        $currentPlan = tenant_plan();
+        
+        if (!$currentPlan) {
+            return false;
+        }
+
+        foreach ($planNames as $planName) {
+            if (strtolower($currentPlan) === strtolower($planName)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+}
+
+/**
+ * Obtiene el ID del plan del tenant actual
+ * 
+ * @return int|null
+ */
+if (!function_exists('tenant_plan_id')) {
+    function tenant_plan_id(): ?int
+    {
+        if (!auth()->check()) {
+            return null;
+        }
+
+        $user = auth()->user();
+        
+        if (!$user->tenant_id) {
+            return null;
+        }
+
+        $tenant = \App\Models\Tenant::find($user->tenant_id);
+        
+        return $tenant ? $tenant->plan_id : null;
+    }
+}

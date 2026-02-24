@@ -2,11 +2,11 @@
     @section('content')
         <div class="container-fluid">
             <div class="py-3">
-                @can('write_user')
+                @if(tenant_can('handle_users'))
                     <a class="btn btn-primary btn-sm" href="{{ route('user.create') }}">
                         <i class="bi bi-plus-lg fw-bold"></i> {{ __('user.title.create') }}
                     </a>
-                @endcan
+                @endif
             </div>
 
 
@@ -122,12 +122,12 @@
                                             title="Editar usuario">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
-                                        <a href="{{ route('user.destroy', ['id' => $user->id]) }}"
+                                        {{-- <a href="{{ route('user.destroy', ['id' => $user->id]) }}"
                                             onclick="return confirm('¿Estás seguro de eliminar este usuario?');"
                                             class="btn btn-danger btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                                             title="Eliminar usuario">
                                             <i class="bi bi-trash-fill"></i>
-                                        </a>
+                                        </a> --}}
                                     @endcan
                                 </td>
                             </tr>

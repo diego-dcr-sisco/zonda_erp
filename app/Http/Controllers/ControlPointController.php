@@ -245,18 +245,18 @@ class ControlPointController extends Controller
         $navigation = [
             'Plano' => [
                 'route' => [route('floorplan.edit', ['id' => $floorplan_id])],
-                'permission' => null,
+                'permission' => 'create_floorplans',
             ],
             'Dispositivos' => [
                 'route' => route('floorplan.devices', ['id' => $floorplan_id, 'version' => $floorplan->lastVersion() ?? '0']),
-                'permission' => null,
+                'permission' => 'create_floorplans',
             ],
             'QRs' => [
                 'route' => route('floorplan.qr', ['id' => $floorplan_id]),
-                'permission' => null
+                'permission' => 'create_floorplans'
             ],
             //'Geolocalización' => ['route' => route('floorplan.geolocation', ['id' => $floorplan_id]), 'permission' => null],
-            'Áreas de aplicación' => ['route' => route('customer.show.sede.areas', ['id' => $floorplan->customer_id]), 'permission' => null]
+            'Áreas de aplicación' => ['route' => route('customer.show.sede.areas', ['id' => $floorplan->customer_id]), 'permission' => 'create_floorplans']
         ];
 
         $devices = $floorplan->devices($floorplan->lastVersion() ?? 1)->get()->map(function ($d) {

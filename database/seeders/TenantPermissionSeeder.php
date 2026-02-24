@@ -12,111 +12,73 @@ class TenantPermissionSeeder extends Seeder {
 
     public function run(): void {
         $permissions = [
-            [
-                'name' => 'show_matrix', 
-                'category' => 't',
-                'type' => 'w',
-            ],
-            [
-                'name' => 'show_sedes', 
-                'category' => 't',
-                'type' => 'w',
-            ],
-            [
-                'name' => 'handle_tracking',
-                'category' => 't',
-                'type' => 'w',
-            ],
-            [
-                'name' => 'handle_quotes',
-                'category' => 't', 
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_planning',
-                'category' => 't', 
-                'type' => 'w',
-            ],
-            [ 
-                'name' => 'handle_contracts',
-                'category' => 't',
-                'type' => 'w',
-            ],
-            [
-                'name' => 'handle_control_points',
-                'category' => 't', 
-                'type' => 'w',
-            ],
-            [
-                'name' => 'handle_floorplans',
-                'category' => 't',
-                'type' => 'w',
-            ],
-            [
-                'name' => 'handle_quality',
-                'category' => 't', 
-                'type' => 'w',
-            ],
-            [
-                'name' => 'handle_report_appearance',
-                'category' => 't', 
-                'type' => 'w',
-            ],
-            [
-                'name' => 'show_quality_analytics',
-                'category' => 't',
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_invoice',
-                'category' => 't', 
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_client_system', 
-                'category' => 't',
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_rh',
-                'category' => 't',
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_files_employees',
-                'category' => 't',
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_stock',
-                'category' => 't', 
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_product_technical_details',
-                'category' => 't',
-                'type' => 'w'
-            ],
-            [
-                'name' => 'assing_technician',
-                'category' => 't',
-                'type' => 'w'
-            ],
-            [
-                'name' => 'generate_voucher_stock',
-                'category' => 't', 
-                'type' => 'w'
-            ],
-            [
-                'name' => 'show_stock_alerts',
-                'category' => 't', 
-                'type' => 'w'
-            ],
-            [
-                'name' => 'handle_customer_zones',
-                'category' => 't', 
-                'type' => 'w'
-            ],
+            // CREATE permissions
+            ['name' => 'create_branches', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_contracts', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_cpoints', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_customers', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_floorplans', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_lots', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_orders', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_pests', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_products', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_quotes', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_services', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_stocks', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_trackings', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_admin_users', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_client_users', 'category' => 't', 'type' => 'w'],
+            ['name' => 'create_leads', 'category' => 't', 'type' => 'w'],
+
+            // CONSULT permissions
+            ['name' => 'consult_reports', 'category' => 't', 'type' => 'w'],
+            ['name' => 'consult_dirs', 'category' => 't', 'type' => 'w'],
+
+            // CONFIG permissions
+            ['name' => 'config_report_appearance', 'category' => 't', 'type' => 'w'],
+
+            // HANDLE permissions
+            ['name' => 'handle_drive_files', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_users', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_customers', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_branches', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_comercial_zones', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_services', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_products', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_pests', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_orders', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_contracts', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_control_points', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_leads', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_quotes', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_tracking', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_floorplans', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_quality', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_report_appearance', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_invoice', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_client_system', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_rh', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_files_employees', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_stock', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_product_technical_details', 'category' => 't', 'type' => 'w'],
+            ['name' => 'handle_customer_zones', 'category' => 't', 'type' => 'w'],
+
+            // SHOW permissions
+            ['name' => 'show_client_system', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_crm', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_planning', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_quality_control', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_rh', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_sedes', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_stocks', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_invoices', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_matrix', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_quality_analytics', 'category' => 't', 'type' => 'w'],
+            ['name' => 'show_stock_alerts', 'category' => 't', 'type' => 'w'],
+
+            // OTHER permissions
+            ['name' => 'assing_technician', 'category' => 't', 'type' => 'w'],
+            ['name' => 'generate_voucher_stock', 'category' => 't', 'type' => 'w'],
         ];
 
         $data = array_map(function ($permission) {

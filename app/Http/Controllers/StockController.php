@@ -48,19 +48,19 @@ class StockController extends Controller
     public $navigation = [
         'Almacenes' => [
             'route' => '/stock',
-            'permission' => null
+            'permission' => 'show_stocks'
         ],
         'Lotes' => [
             'route' => '/lot/index',
-            'permission' => null
+            'permission' => 'create_lots'
         ],
         'Productos' => [
             'route' => '/products',
-            'permission' => null
+            'permission' => 'handle_products'
         ],
         'Movimientos' => [
             'route' => '/stock/movements',
-            'permission' => null
+            'permission' => 'handle_stock'
         ],
         // 'Zonas' => [
         //     'route' => '/customer-zones',

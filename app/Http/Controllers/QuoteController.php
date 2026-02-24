@@ -43,7 +43,7 @@ class QuoteController extends Controller
                 ],
                 'Planos' => [
                     'route' => route('customer.show.sede.floorplans', ['id' => $customer->id]),
-                    'permission' => 'handle_floorplans'
+                    'permission' => 'create_floorplans'
                 ],
                 'Portal' => [
                     'route' => route('customer.show.sede.portal', ['id' => $customer->id]),
@@ -51,7 +51,7 @@ class QuoteController extends Controller
                 ],
                 'Áreas de aplicación' => [
                     'route' => route('customer.show.sede.areas', ['id' => $customer->id]),
-                    'permission' => 'handle_floorplans'
+                    'permission' => 'create_floorplans'
                 ],
                 //'Seguimientos' => [
                 //    'route' => route('customer.show.sede.trackings', ['id' => $customer->id]),
@@ -60,10 +60,6 @@ class QuoteController extends Controller
                 'Cotizaciones' => [
                     'route' => route('customer.quote', ['id' => $customer->id, 'class' => 'customer']),
                     'permission' => 'handle_quotes'
-                ],
-                'Estadisticas' => [
-                    'route' => route('customer.graphics', ['id' => $customer->id]),
-                    'permission' => null
                 ],
             ];
     }
@@ -105,7 +101,7 @@ class QuoteController extends Controller
                 ],
                 'Planos' => [
                     'route' => route('customer.show.sede.floorplans', ['id' => $customer->id]),
-                    'permission' => 'handle_floorplans'
+                    'permission' => 'create_floorplans'
                 ],
                 'Portal' => [
                     'route' => route('customer.show.sede.portal', ['id' => $customer->id]),
@@ -113,7 +109,7 @@ class QuoteController extends Controller
                 ],
                 'Áreas de aplicación' => [
                     'route' => route('customer.show.sede.areas', ['id' => $customer->id]),
-                    'permission' => 'handle_floorplans'
+                    'permission' => 'create_floorplans'
                 ],
                 //'Seguimientos' => [
                 //    'route' => route('customer.show.sede.trackings', ['id' => $customer->id]),
@@ -122,10 +118,6 @@ class QuoteController extends Controller
                 'Cotizaciones' => [
                     'route' => route('customer.quote', ['id' => $customer->id, 'class' => 'customer']),
                     'permission' => 'handle_quotes'
-                ],
-                'Estadisticas' => [
-                    'route' => route('customer.graphics', ['id' => $customer->id]),
-                    'permission' => null
                 ],
             ];
         }
@@ -215,7 +207,7 @@ class QuoteController extends Controller
                 ],
                 'Planos' => [
                     'route' => route('customer.show.sede.floorplans', ['id' => $customer_id]),
-                    'permission' => 'handle_floorplans'
+                    'permission' => 'create_floorplans'
                 ],
                 'Portal' => [
                     'route' => route('customer.show.sede.portal', ['id' => $customer_id]),
@@ -223,7 +215,7 @@ class QuoteController extends Controller
                 ],
                 'Áreas de aplicación' => [
                     'route' => route('customer.show.sede.areas', ['id' => $customer_id]),
-                    'permission' => 'handle_floorplans'
+                    'permission' => 'create_floorplans'
                 ],
                 //'Seguimientos' => [
                 //    'route' => route('customer.show.sede.trackings', ['id' => $customer_id]),

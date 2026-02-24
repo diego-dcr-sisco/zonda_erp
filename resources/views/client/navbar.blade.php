@@ -1,7 +1,7 @@
 <style>
     .sidebar {
         color: white;
-        text-decoration: none;  
+        text-decoration: none;
     }
 
     .sidebar:hover {
@@ -15,17 +15,21 @@
     <div class="row sticky-top" style="font-size: 85%">
         <span class="text-light border-top mb-2 pt-2">Clientes</span>
 
-        <a href="{{ route('client.system.index', ['path' => 'client_system']) }}" class="sidebar rounded-start py-2 pl-0">
-            <i class="bi bi-folder"></i> Carpetas
-        </a>
-        <a href="{{ route('client.reports') }}" class="sidebar rounded-start py-2 pl-0">
-            <i class="bi bi-file-earmark-pdf"></i> Reportes
-        </a>
-        {{--@can('write_system_client')
+        @if (tenant_can('consult_dirs'))
+            <a href="{{ route('client.system.index', ['path' => $path]) }}" class="sidebar rounded-start py-2 pl-0">
+                <i class="bi bi-folder"></i> Carpetas
+            </a>
+        @endif
+        
+        @if (tenant_can('consult_reports'))
+            <a href="{{ route('client.reports') }}" class="sidebar rounded-start py-2 pl-0">
+                <i class="bi bi-file-earmark-pdf"></i> Reportes
+            </a>
+        @endif
+        {{-- @can('write_system_client')
         <a href="{{ route('client.mip.index', ['path' => 'mip_directory']) }}" class="sidebar rounded-start py-2 pl-0">
             <i class="bi bi-person-rolodex"></i> MIP
         </a>
-        @endcan--}}
+        @endcan --}}
     </div>
 </div>
-

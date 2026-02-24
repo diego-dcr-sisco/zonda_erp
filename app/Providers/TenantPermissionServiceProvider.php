@@ -18,5 +18,6 @@ class TenantPermissionServiceProvider extends ServiceProvider
     {
         // Cargar helpers
         require_once app_path('Helpers/tenant_permissions.php');
+        require_once app_path('Helpers/tenant_security.php');
     }
 }

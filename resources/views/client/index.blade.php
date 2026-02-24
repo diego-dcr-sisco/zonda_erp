@@ -75,30 +75,34 @@
         <!-- Grid de tarjetas responsive con animaciones -->
         <div class="d-flex flex-wrap justify-content-center gap-4 mb-4">
             <!-- Carpeta -->
-            <a href="{{ route('client.system.index', ['path' => $path]) }}"
-                class="card text-white text-decoration-none hover-scale position-relative bg-yellow card-animate"
-                style="width: 150px; height: 130px;">
-                <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
-                    <div class="text-center">
-                        <i class="bi bi-folder-fill d-block fs-4 mb-2"></i>
-                        <h3 class="h6 fw-bold mb-1">Carpetas</h3>
-                        <p class="small opacity-75 mb-0">MIP</p>
+            @if (tenant_can('consult_dirs'))
+                <a href="{{ route('client.system.index', ['path' => $path]) }}"
+                    class="card text-white text-decoration-none hover-scale position-relative bg-yellow card-animate"
+                    style="width: 150px; height: 130px;">
+                    <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                        <div class="text-center">
+                            <i class="bi bi-folder-fill d-block fs-4 mb-2"></i>
+                            <h3 class="h6 fw-bold mb-1">Carpetas</h3>
+                            <p class="small opacity-75 mb-0">MIP</p>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            @endif
 
             <!-- Reportes -->
-            <a href="{{ route('client.reports') }}"
-                class="card text-white text-decoration-none hover-scale position-relative bg-blue card-animate"
-                style="width: 150px; height: 130px;">
-                <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
-                    <div class="text-center">
-                        <i class="bi bi-file-pdf-fill d-block fs-4 mb-2"></i>
-                        <h3 class="h6 fw-bold mb-1">Reportes</h3>
-                        <p class="small opacity-75 mb-0">Certificados de trabajo</p>
+            @if (tenant_can('consult_reports'))
+                <a href="{{ route('client.reports') }}"
+                    class="card text-white text-decoration-none hover-scale position-relative bg-blue card-animate"
+                    style="width: 150px; height: 130px;">
+                    <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                        <div class="text-center">
+                            <i class="bi bi-file-pdf-fill d-block fs-4 mb-2"></i>
+                            <h3 class="h6 fw-bold mb-1">Reportes</h3>
+                            <p class="small opacity-75 mb-0">Certificados de trabajo</p>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            @endif
 
             <!-- MIP (comentado) -->
             {{--

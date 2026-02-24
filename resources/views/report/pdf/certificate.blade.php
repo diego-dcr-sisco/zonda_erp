@@ -4,6 +4,31 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>{{ $title }}</title>
+    @php
+        // Función para calcular si un color es oscuro o claro
+        function isColorDark($hexColor) {
+            // Remover el # si existe
+            $hexColor = ltrim($hexColor, '#');
+            
+            // Convertir hex a RGB
+            $r = hexdec(substr($hexColor, 0, 2));
+            $g = hexdec(substr($hexColor, 2, 2));
+            $b = hexdec(substr($hexColor, 4, 2));
+            
+            // Calcular luminosidad usando la fórmula de luminosidad relativa
+            $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+            
+            // Si la luminosidad es menor a 0.5, es un color oscuro
+            return $luminance < 0.5;
+        }
+        
+        $primaryColor = $primaryColor ?? '#012640';
+        $secondaryColor = $secondaryColor ?? '#793775';
+        
+        // Determinar el color del texto basado en el color de fondo
+        $primaryTextColor = isColorDark($primaryColor) ? '#ffffff' : '#000000';
+        $secondaryTextColor = isColorDark($secondaryColor) ? '#ffffff' : '#000000';
+    @endphp
     <style>
         /* Fuente compatible con DOM PDF (evita Google Fonts dinámicos) */
         body {
@@ -89,18 +114,18 @@
         }
 
         .bg-blue {
-            background-color: #012640;
+            background-color: {{ $primaryColor }};
             font-weight: bold;
             padding-left: 5px;
             width: 100%;
-            color: #fff;
+            color: {{ $primaryTextColor }};
         }
 
         .square {
             display: inline-block;
             width: 12px;
             height: 12px;
-            background-color: #DE523B;
+            background-color: {{ $secondaryColor }};
             vertical-align: middle;
             /* Alinea verticalmente */
         }
@@ -122,8 +147,9 @@
         }
 
         .product-table thead tr {
-            background-color: #b0bec5;
+            background-color: {{ $secondaryColor }};
             text-align: left;
+            color: {{ $secondaryTextColor }};
         }
 
         .product-table th,
@@ -246,7 +272,7 @@
             text-align: center;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.1;
+            opacity: {{ $watermarkOpacity ?? 0.1 }};
         }
 
         .watermark img {
@@ -305,18 +331,20 @@
 </head>
 
 <body>
+    @if(file_exists(public_path($watermarkPath ?? 'images/watermark.png')))
     <div class="watermark">
-        <img
-            src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/zonda/watermark.png'))) }}">
+        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path($watermarkPath ?? 'images/watermark.png'))) }}">
     </div>
+    @endif
 
     <div class="row">
         <div class="title">
             <h1 style="font-size: 22px; margin: 0;">{{ $title }}</h1>
         </div>
         <div class="logo">
-            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/zonda/landscape_logo.png'))) }} style="width:
-                150px; margin: 0;">
+            @if(file_exists(public_path($logoPath ?? 'images/logo_reporte.png')))
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path($logoPath ?? 'images/logo_reporte.png'))) }}" style="width: 180px; margin: 0;">
+            @endif
         </div>
     </div>
 

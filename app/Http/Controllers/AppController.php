@@ -162,6 +162,45 @@ class AppController extends Controller
 			$user = User::find($id);
 			$answers = json_decode(file_get_contents(public_path($this->file_answers_path)), true);
 
+			// Verificar que hay un tenant establecido
+			$currentTenantId = \App\Tenancy\TenantManager::getCurrentTenantId();
+			
+			Log::info('Método orders - Control de Tenant', [
+				'user_id' => $id,
+				'user_email' => $user->email ?? 'N/A',
+				'user_tenant_id' => $user->tenant_id ?? 'NULL',
+				'current_tenant_id' => $currentTenantId,
+				'date' => $date
+			]);
+
+			if (!$user) {
+				return response()->json(['error' => 'Usuario no encontrado'], 404);
+			}
+
+			// Validar que el usuario tenga tenant_id
+			if (!$user->tenant_id) {
+				Log::error('Usuario sin tenant_id intentando acceder a orders', [
+					'user_id' => $user->id,
+					'email' => $user->email
+				]);
+				return response()->json([
+					'error' => 'Usuario sin tenant asignado',
+					'message' => 'Por favor contacte al administrador'
+				], 403);
+			}
+
+			// Validar que el tenant esté establecido en el contexto
+			if (!$currentTenantId) {
+				Log::error('Tenant no establecido en contexto al acceder a orders', [
+					'user_id' => $user->id,
+					'email' => $user->email,
+					'user_tenant_id' => $user->tenant_id
+				]);
+				return response()->json([
+					'error' => 'Error de tenant',
+					'message' => 'No se pudo establecer el contexto de tenant'
+				], 500);
+			}
 
 			if ($user) {
 				//$date_range = urldecode($dates);
@@ -215,6 +254,16 @@ class AppController extends Controller
 					$application_methods = ApplicationMethod::select(['application_method.id', 'application_method.name', 'application_method.updated_at'])
 						->orderBy('application_method.name')
 						->get();
+
+					// Log para verificar filtrado por tenant
+					Log::info('Datos filtrados por tenant en orders', [
+						'order_id' => $order->id,
+						'service_id' => $service->id,
+						'tenant_id' => $currentTenantId,
+						'products_count' => $products->count(),
+						'pests_count' => $pests->count(),
+						'application_methods_count' => $application_methods->count(),
+					]);
 
 					if ($service->prefix == 1) {
 						$floorplans = FloorPlans::where('service_id', $service->id)->where('customer_id', $order->customer->id)->get();

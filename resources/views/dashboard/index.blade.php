@@ -253,8 +253,86 @@
 
         <!-- Grid de tarjetas con animación secuencial -->
         <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+            @if (tenant_is_plan('Lite'))
+                @if (tenant_can('handle_customers'))
+                    <!-- Clientes -->
+                    <a href="{{ route('customer.index') }}"
+                        class="card text-white text-decoration-none hover-scale position-relative bg-blue card-animate"
+                        style="width: 150px; height: 130px;">
+                        <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                            <div class="text-center">
+                                <i class="bi bi-people-fill d-block fs-4 mb-2"></i>
+                                <h3 class="h6 fw-bold mb-1">Clientes</h3>
+                                <p class="small opacity-75 mb-0">Gestión</p>
+                            </div>
+                        </div>
+                    </a>
+                @endif
+
+                @if (tenant_can('handle_orders'))
+                    <!-- Órdenes -->
+                    <a href="{{ route('order.index') }}"
+                        class="card text-white text-decoration-none hover-scale position-relative bg-purple card-animate"
+                        style="width: 150px; height: 130px;">
+                        <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                            <div class="text-center">
+                                <i class="bi bi-nut-fill d-block fs-4 mb-2"></i>
+                                <h3 class="h6 fw-bold mb-1">Órdenes</h3>
+                                <p class="small opacity-75 mb-0">Control</p>
+                            </div>
+                        </div>
+                    </a>
+                @endif
+
+                @if(tenant_can('handle_services'))
+                    <!-- Servicios -->
+                    <a href="{{ route('service.index') }}"
+                        class="card text-white text-decoration-none hover-scale position-relative bg-red card-animate"
+                        style="width: 150px; height: 130px;">
+                        <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                            <div class="text-center">
+                                <i class="bi bi bi-gear-fill d-block fs-4 mb-2"></i>
+                                <h3 class="h6 fw-bold mb-1">Servicios</h3> 
+                                <p class="small opacity-75 mb-0">Gestión</p>
+                            </div>
+                        </div>
+                    </a>
+                @endif
+
+                @if(tenant_can('handle_pests'))
+                    <!-- Plagas -->
+                    <a href="{{ route('pest.index') }}"
+                        class="card text-white text-decoration-none hover-scale position-relative bg-green card-animate"
+                        style="width: 150px; height: 130px;">
+                        <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                            <div class="text-center">
+                                <i class="bi bi-bug-fill d-block fs-4 mb-2"></i>
+                                <h3 class="h6 fw-bold mb-1">Plagas</h3>
+                                <p class="small opacity-75 mb-0">Organismos</p>
+                            </div>
+                        </div>
+                    </a>
+                @endif
+
+                @if(tenant_can('handle_products'))
+                    <!-- Productos -->
+                    <a href="{{ route('product.index') }}"
+                        class="card text-white text-decoration-none hover-scale position-relative bg-brown card-animate"
+                        style="width: 150px; height: 130px;">
+                        <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                            <div class="text-center">
+                                <i class="bi bi-box-seam-fill d-block fs-4 mb-2"></i>
+                                <h3 class="h6 fw-bold mb-1">Productos</h3>
+                                <p class="small opacity-75 mb-0">Catálogo</p>
+                            </div>
+                        </div>
+                    </a>
+                @endif
+            @endif
+
+
             <!-- CRM -->
-            @if (tenant_can('handle_crm'))
+            @if (tenant_can('show_crm'))
                 <a href="{{ route('crm.agenda') }}"
                     class="card text-white text-decoration-none hover-scale position-relative bg-blue card-animate"
                     style="width: 150px; height: 130px;">
@@ -269,7 +347,7 @@
             @endif
 
             <!-- Planificación -->
-            @if (tenant_can('handle_planning'))
+            @if (tenant_can('show_planning'))
                 <a href="{{ route('planning.schedule') }}"
                     class="card text-white text-decoration-none hover-scale position-relative bg-purple card-animate"
                     style="width: 150px; height: 130px;">
@@ -284,7 +362,7 @@
             @endif
 
             <!-- Calidad -->
-            @if (tenant_can('handle_quality'))
+            @if (tenant_can('show_quality_control'))
                 <a href="{{ route('quality.customers') }}"
                     class="card text-white text-decoration-none hover-scale position-relative bg-red card-animate"
                     style="width: 150px; height: 130px;">
@@ -298,7 +376,7 @@
                 </a>
             @endif
 
-            @if (tenant_can('handle_stock'))
+            @if (tenant_can('show_stocks'))
                 <!-- Almacén -->
                 <a href="{{ route('stock.index') }}"
                     class="card text-white text-decoration-none hover-scale position-relative bg-brown card-animate"
@@ -313,7 +391,7 @@
                 </a>
             @endif
 
-            @if (tenant_can('handle_rh'))
+            @if (tenant_can('show_rh'))
                 <!-- RRHH -->
                 <a href="{{ route('rrhh', ['section' => 1]) }}"
                     class="card text-white text-decoration-none hover-scale position-relative bg-pink card-animate"
@@ -341,10 +419,10 @@
                         </div>
                     </div>
                 </a>
-            @endif--}}
+            @endif --}}
 
             <!-- Clientes -->
-            @if (tenant_can('handle_client_system'))
+            @if (tenant_can('show_client_system'))
                 <a href="{{ route('client.index') }}"
                     class="card text-white text-decoration-none hover-scale position-relative bg-gray card-animate"
                     style="width: 150px; height: 130px;">

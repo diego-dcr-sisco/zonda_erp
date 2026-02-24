@@ -20,18 +20,44 @@ class ServiceController extends Controller
 {
 
     private $size = 50;
+    private $navigation;
+
+    public function __construct()
+    {
+        $this->navigation = [
+            'Contratos' => [
+                'route' => route('contract.index'),
+                'permission' => 'handle_contracts',
+            ],
+            'Ordenes de servicios' => [
+                'route' => route('order.index'),
+                'permission' => null,
+            ],
+            'Servicios' => [
+                'route' => route('service.index'),
+                'permission' => null,
+            ],
+            'CRM' => [
+                'route' => route('crm.agenda'),
+                'permission' => 'handle_crm'
+            ],
+        ];
+    }
 
     public function index(): View
     {
         $services = Service::orderBy('id', 'desc')->paginate($this->size);
         $types = ServiceType::all();
         $prefix = ServicePrefix::all();
+        $navigation = $this->navigation;
+
         return view(
             'service.index',
             compact(
                 'services',
                 'types',
-                'prefix'
+                'prefix',
+                'navigation'
             )
         );
     }
@@ -47,6 +73,8 @@ class ServiceController extends Controller
         $business_lines = LineBusiness::all();
         $prefixes = ServicePrefix::all();
 
+        $navigation = $this->navigation;
+
         return view(
             'service.create',
             compact(
@@ -55,6 +83,7 @@ class ServiceController extends Controller
                 'application_methods',
                 'business_lines',
                 'prefixes',
+                'navigation'
             )
         );
     }
@@ -155,24 +184,7 @@ class ServiceController extends Controller
         $business_lines = LineBusiness::all();
         $prefixes = ServicePrefix::all();
 
-        $navigation = [
-            'Servicio' => [
-                'route' => route('service.edit', ['id' => $service->id]),
-                'permission' => null
-            ],
-            'Plagas' => [
-                'route' => route('service.edit.pests', ['id' => $service->id]),
-                'permission' => null
-            ],
-            'Métodos de aplicación' => [
-                'route' => route('service.edit.appMethods', ['id' => $service->id]),
-                'permission' => null
-            ],
-            'Productos' => [
-                'route' => route('service.edit.products', ['id' => $service->id]),
-                'permission' => null
-            ],
-        ];
+        $navigation = $this->navigation;
 
         return view(
             'service.edit.form',

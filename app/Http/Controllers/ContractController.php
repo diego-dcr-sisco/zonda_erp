@@ -80,11 +80,15 @@ class ContractController extends Controller
                 'route' => route('contract.index'),
                 'permission' => 'handle_contracts'
             ],
-            'Ordenes de servicio' =>
+            'Ordenes de servicios' =>
                 [
                     'route' => route('order.index'),
-                    'permission' => null
+                    'permission' => 'handle_orders'
                 ],
+            'Servicios' => [
+                'route' => route('service.index'),
+                'permission' => 'handle_services'
+            ],
             /*'Facturas' => [
                 'route' => route('invoice.index'),
                 'permission' => 'handle_invoices'
