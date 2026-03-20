@@ -406,7 +406,7 @@
                 </a>
             @endif
 
-            {{-- @if (tenant_can('handle_invoice'))
+            @if (tenant_can_any(['show_invoices', 'handle_invoice']))
                 <!-- facturación -->
                 <a href="{{ route('invoices.dashboard') }}"
                     class="card text-white text-decoration-none hover-scale position-relative bg-green card-animate"
@@ -419,7 +419,7 @@
                         </div>
                     </div>
                 </a>
-            @endif --}}
+            @endif
 
             <!-- Clientes -->
             @if (tenant_can('show_client_system'))

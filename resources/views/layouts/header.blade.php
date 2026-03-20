@@ -144,11 +144,11 @@
                                                 RRHH</a></li>
                                     @endif
 
-                                    {{--  @if (tenant_can('handle_invoice'))
+                                    @if (tenant_can_any(['show_invoices', 'handle_invoice']))
                                     <li><a class="dropdown-item text-light" href="{{ route('invoices.index') }}"><i
                                                 class="bi bi-stack"></i>
                                             Facturación</a></li>
-                                @endif --}}
+                                @endif
 
                                     @if (tenant_can('show_client_system'))
                                         <li><a class="dropdown-item text-light" href="{{ route('client.index') }}"><i
