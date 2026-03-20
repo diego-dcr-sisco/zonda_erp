@@ -77,15 +77,15 @@ class InvoiceController extends Controller
     {
         $this->cfdiService = $cfdiService;
         $this->navigation = [
-            'Dashboard' => route('invoices.dashboard'),
-            'Contribuyentes' => route('invoices.customers'),
-            'Conceptos' => route('invoices.concepts'),
-            'Facturas' => route('invoices.index'),
-            'Notas de credito' => route('invoices.credit-notes.index'),
-            'Complementos de pago' => route('invoices.payments.index'),
-            'Nomina' => route('payrolls.index'),
-            'Ordenes de Servicio' => route('order.index'),
-            'Contratos' => route('contract.index'),
+            'Dashboard' => ['route' => route('invoices.dashboard'), 'permission' => null],
+            'Contribuyentes' => ['route' => route('invoices.customers'), 'permission' => null],
+            'Conceptos' => ['route' => route('invoices.concepts'), 'permission' => null],
+            'Facturas' => ['route' => route('invoices.index'), 'permission' => null],
+            'Notas de credito' => ['route' => route('invoices.credit-notes.index'), 'permission' => null],
+            'Complementos de pago' => ['route' => route('invoices.payments.index'), 'permission' => null],
+            'Nomina' => ['route' => route('payrolls.index'), 'permission' => null],
+            'Ordenes de Servicio' => ['route' => route('order.index'), 'permission' => null],
+            'Contratos' => ['route' => route('contract.index'), 'permission' => null],
         ];
 
         $this->unitCodes = [
@@ -1137,9 +1137,9 @@ class InvoiceController extends Controller
     public function showCustomerInvoices($id)
     {
         $navigation = [
-            'Dashboard' => route('invoices.index'),
-            'Facturas' => route('invoices.index'),
-            'Clientes' => route('invoices.customers'),
+            'Dashboard' => ['route' => route('invoices.index'), 'permission' => null],
+            'Facturas' => ['route' => route('invoices.index'), 'permission' => null],
+            'Clientes' => ['route' => route('invoices.customers'), 'permission' => null],
         ];
 
         $customer = InvoiceCustomer::findOrFail($id);

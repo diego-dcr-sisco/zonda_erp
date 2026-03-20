@@ -24,9 +24,14 @@
 <ul class="nav flex-column">
     @isset($navigation)
         @foreach ($navigation as $key => $nav)
-            @if ($nav['permission'] == null || tenant_can($nav['permission']))
+            @php
+                $route = is_array($nav) ? ($nav['route'] ?? null) : $nav;
+                $permission = is_array($nav) ? ($nav['permission'] ?? null) : null;
+            @endphp
+
+            @if ($route && ($permission == null || tenant_can($permission)))
                 <li class="nav-item">
-                    <a class="nav-link navbar-item" href="{{ $nav['route'] }}">{{ $key }}</a>
+                    <a class="nav-link navbar-item" href="{{ $route }}">{{ $key }}</a>
                 </li>
             @endif
         @endforeach
