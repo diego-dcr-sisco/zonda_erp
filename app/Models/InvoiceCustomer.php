@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Tenancy\TenantScoped;
 
 use App\Enums\TaxpayerType;
 
 class InvoiceCustomer extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantScoped;
 
     /**
      * The table associated with the model.

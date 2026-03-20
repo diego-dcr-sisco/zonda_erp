@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Enums\PayrollType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Tenancy\TenantScoped;
 
 class Payroll extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantScoped;
 
     /**
      * The attributes that are mass assignable.

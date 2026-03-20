@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Tenancy\TenantScoped;
 
 use Carbon\carbon;
 
 class InvoicePayment extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantScoped;
     protected $fillable = [
         'invoice_id',
         'customer_id',

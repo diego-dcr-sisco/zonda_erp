@@ -93,13 +93,11 @@ class CustomerController extends Controller
         $this->navigation_invoices = [
             'Dashboard' => ['route' => route('invoices.dashboard'), 'permission' => null],
             'Contribuyentes' => ['route' => route('invoices.customers'), 'permission' => null],
-            'Conceptos' => ['route' => route('invoices.concepts'), 'permission' => null],
             'Facturas' => ['route' => route('invoices.index'), 'permission' => null],
             'Notas de credito' => ['route' => route('invoices.credit-notes.index'), 'permission' => null],
             'Complementos de pago' => ['route' => route('invoices.payments.index'), 'permission' => null],
             'Nomina' => ['route' => route('payrolls.index'), 'permission' => null],
             'Ordenes de Servicio' => ['route' => route('order.index'), 'permission' => null],
-            'Contratos' => ['route' => route('contract.index'), 'permission' => null],
         ];
 
         $this->navigation = [

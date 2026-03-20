@@ -82,17 +82,14 @@ class PayrollController extends Controller
 
     public function __construct()
     {
-        // Opcional: usando claves en inglés para consistencia
         $this->navigation = [
-            'Dashboard' => ['route' => route('invoices.dashboard'), 'permission' => 'handle_invoice'],
-            'Customers' => ['route' => route('invoices.customers'), 'permission' => 'handle_invoice'],
-            'Concepts' => ['route' => route('invoices.concepts'), 'permission' => 'handle_invoice'],
-            'Invoices' => ['route' => route('invoices.index'), 'permission' => 'handle_invoice'],
-            'Credit Notes' => ['route' => route('invoices.credit-notes.index'), 'permission' => 'handle_invoice'],
-            'Payments' => ['route' => route('invoices.payments.index'), 'permission' => 'handle_invoice'],
-            'Payroll' => ['route' => route('payrolls.index'), 'permission' => 'handle_invoice'],
-            'Service Orders' => ['route' => route('order.index'), 'permission' => null],
-            'Contracts' => ['route' => route('contract.index'), 'permission' => null]
+            'Dashboard' => ['route' => route('invoices.dashboard'), 'permission' => null],
+            'Contribuyentes' => ['route' => route('invoices.customers'), 'permission' => null],
+            'Facturas' => ['route' => route('invoices.index'), 'permission' => null],
+            'Notas de credito' => ['route' => route('invoices.credit-notes.index'), 'permission' => null],
+            'Complementos de pago' => ['route' => route('invoices.payments.index'), 'permission' => null],
+            'Nomina' => ['route' => route('payrolls.index'), 'permission' => null],
+            'Ordenes de Servicio' => ['route' => route('order.index'), 'permission' => null],
         ];
 
         $this->contract_types = [
