@@ -104,6 +104,10 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
             <ul class="navbar-nav">
                 @auth
+                    @php
+                        $isStarterPlan = tenant_is_plan('Starter');
+                    @endphp
+
                     <!-- Menú de Administración (solo para usuarios tipo 1) -->
                     @if (auth()->user()->type_id == 1)
                         @if (tenant_is_plan('Pro') || tenant_is_plan('Lite+'))
@@ -158,167 +162,173 @@
                                 </ul>
                             </li>
                         @endif
-                        <li class="nav-item dropdown">
-                            <a class="nav-link fw-bold text-light" href="#" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Administración
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
-                                <li><a class="dropdown-item text-light" href="{{ route('user.index', ['type' => 1]) }}"><i
-                                            class="bi bi-person-fill"></i>
-                                        Usuarios</a></li>
-                                <li><a class="dropdown-item text-light"
-                                        href="{{ route('customer.index', ['type' => 1, 'page' => 1]) }}"><i
-                                            class="bi bi-people-fill"></i>
-                                        Clientes</a></li>
-                                <li><a class="dropdown-item text-light" href="{{ route('branch.index') }}"><i
-                                            class="bi bi-globe-americas"></i>
-                                        Sucursales</a></li>
-                                @if (tenant_can('handle_customer_zones'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('comercial-zones.index') }}"><i
-                                                class="bi bi-geo-alt-fill"></i>
-                                            Zonas
-                                            comerciales</a></li>
-                                @endif
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item text-light" href="{{ route('service.index') }}"><i
-                                            class="bi bi-gear-fill"></i>
-                                        Servicios</a></li>
-                                <li><a class="dropdown-item text-light" href="{{ route('product.index') }}"><i
-                                            class="bi bi-box-fill"></i>
-                                        Productos</a></li>
-                                <li><a class="dropdown-item text-light" href="{{ route('pest.index') }}"><i
-                                            class="bi bi-bug-fill"></i>
-                                        Plagas</a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item text-light" href="{{ route('order.index') }}"><i
-                                            class="bi bi-nut-fill"></i>
-                                        Ordenes de servicio</a></li>
-                                @if (tenant_can('handle_contracts'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('contract.index') }}"><i
-                                                class="bi bi-calendar-fill"></i>
-                                            Contratos</a></li>
-                                @endif
+                        @unless ($isStarterPlan)
+                            <li class="nav-item dropdown">
+                                <a class="nav-link fw-bold text-light" href="#" role="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Administración
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
+                                    <li><a class="dropdown-item text-light" href="{{ route('user.index', ['type' => 1]) }}"><i
+                                                class="bi bi-person-fill"></i>
+                                            Usuarios</a></li>
+                                    <li><a class="dropdown-item text-light"
+                                            href="{{ route('customer.index', ['type' => 1, 'page' => 1]) }}"><i
+                                                class="bi bi-people-fill"></i>
+                                            Clientes</a></li>
+                                    <li><a class="dropdown-item text-light" href="{{ route('branch.index') }}"><i
+                                                class="bi bi-globe-americas"></i>
+                                            Sucursales</a></li>
+                                    @if (tenant_can('handle_customer_zones'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('comercial-zones.index') }}"><i
+                                                    class="bi bi-geo-alt-fill"></i>
+                                                Zonas
+                                                comerciales</a></li>
+                                    @endif
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item text-light" href="{{ route('service.index') }}"><i
+                                                class="bi bi-gear-fill"></i>
+                                            Servicios</a></li>
+                                    <li><a class="dropdown-item text-light" href="{{ route('product.index') }}"><i
+                                                class="bi bi-box-fill"></i>
+                                            Productos</a></li>
+                                    <li><a class="dropdown-item text-light" href="{{ route('pest.index') }}"><i
+                                                class="bi bi-bug-fill"></i>
+                                            Plagas</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item text-light" href="{{ route('order.index') }}"><i
+                                                class="bi bi-nut-fill"></i>
+                                            Ordenes de servicio</a></li>
+                                    @if (tenant_can('handle_contracts'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('contract.index') }}"><i
+                                                    class="bi bi-calendar-fill"></i>
+                                                Contratos</a></li>
+                                    @endif
 
-                                @if (tenant_can('handle_control_points'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('point.index') }}"><i
-                                                class="bi bi-hand-index-fill"></i>
-                                            Puntos de control</a></li>
-                                @endif
-                            </ul>
-                        </li>
+                                    @if (tenant_can('handle_control_points'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('point.index') }}"><i
+                                                    class="bi bi-hand-index-fill"></i>
+                                                Puntos de control</a></li>
+                                    @endif
+                                </ul>
+                            </li>
+                        @endunless
 
-                        <li class="nav-item dropdown">
-                            <a class="nav-link fw-bold text-white fw-bold position-relative" data-bs-toggle="dropdown"
-                                href="#" role="button" aria-expanded="false">
-                                <i class="bi bi-bell-fill"></i>
-                                @php
-                                    $count_trackings = session('count_trackings', 0);
-                                    $trackings_data = session('trackings_data', []);
-                                    $statusMap = [
-                                        'active' => ['color' => 'success', 'text' => 'Activo'],
-                                        'completed' => ['color' => 'primary', 'text' => 'Completado'],
-                                        'canceled' => ['color' => 'danger', 'text' => 'Cancelado'],
-                                    ];
-                                @endphp
-                                @if ($count_trackings > 0)
-                                    <span class="notification-badge">{{ $count_trackings }}</span>
-                                @endif
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end"
-                                style="width: 400px; max-height: 500px; overflow-y: auto;">
-                                <li>
-                                    <div class="dropdown-header bg-warning text-dark">
-                                        <i class="bi bi-calendar-check me-2"></i>
-                                        <strong>CRM Seguimientos Pendientes</strong>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="px-3 py-2">
-                                        <!-- Alerta de seguimientos pendientes -->
-                                        <div class="alert alert-warning border-0 shadow-sm mb-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                                                <div>
-                                                    <h6 class="mb-0 text-dark">{{ $count_trackings }} Pendientes</h6>
-                                                    <small class="text-dark">Seguimientos que requieren atención</small>
-                                                </div>
-                                            </div>
+                        @unless ($isStarterPlan)
+                            <li class="nav-item dropdown">
+                                <a class="nav-link fw-bold text-white fw-bold position-relative" data-bs-toggle="dropdown"
+                                    href="#" role="button" aria-expanded="false">
+                                    <i class="bi bi-bell-fill"></i>
+                                    @php
+                                        $count_trackings = session('count_trackings', 0);
+                                        $trackings_data = session('trackings_data', []);
+                                        $statusMap = [
+                                            'active' => ['color' => 'success', 'text' => 'Activo'],
+                                            'completed' => ['color' => 'primary', 'text' => 'Completado'],
+                                            'canceled' => ['color' => 'danger', 'text' => 'Cancelado'],
+                                        ];
+                                    @endphp
+                                    @if ($count_trackings > 0)
+                                        <span class="notification-badge">{{ $count_trackings }}</span>
+                                    @endif
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end"
+                                    style="width: 400px; max-height: 500px; overflow-y: auto;">
+                                    <li>
+                                        <div class="dropdown-header bg-warning text-dark">
+                                            <i class="bi bi-calendar-check me-2"></i>
+                                            <strong>CRM Seguimientos Pendientes</strong>
                                         </div>
-
-                                        <!-- Lista de seguimientos -->
-                                        @if (count($trackings_data) > 0)
-                                            @foreach ($trackings_data as $tracking)
-                                                <div
-                                                    class="notification-item notification-priority-medium p-2 mb-2 rounded">
-                                                    <div class="d-flex justify-content-between align-items-start">
-                                                        <div class="flex-grow-1">
-                                                            <h6 class="mb-1 text-dark">
-                                                                {{ $tracking['customer'] ?? 'Cliente' }}</h6>
-                                                            <p class="mb-1 small text-muted">
-                                                                {{ $tracking['title'] ?? 'Seguimiento' }}</p>
-                                                            <small class="text-primary">
-                                                                <i class="bi bi-calendar-event me-1"></i>
-                                                                {{ $tracking['next_date'] ?? 'Sin fecha' }}
-                                                            </small>
-                                                        </div>
-                                                        <span
-                                                            class="badge bg-{{ $statusMap[$tracking['status']]['color'] ?? 'secondary' }} ms-2">
-                                                            {{ $statusMap[$tracking['status']]['text'] ?? 'Pendiente' }}
-                                                        </span>
+                                    </li>
+                                    <li>
+                                        <div class="px-3 py-2">
+                                            <!-- Alerta de seguimientos pendientes -->
+                                            <div class="alert alert-warning border-0 shadow-sm mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                                                    <div>
+                                                        <h6 class="mb-0 text-dark">{{ $count_trackings }} Pendientes</h6>
+                                                        <small class="text-dark">Seguimientos que requieren atención</small>
                                                     </div>
                                                 </div>
-                                            @endforeach
-                                        @else
-                                            <div class="text-center bg-light rounded py-3">
-                                                <i class="bi bi-check-circle-fill text-success fs-1"></i>
-                                                <p class="text-muted mt-2 mb-0">No hay seguimientos pendientes</p>
                                             </div>
-                                        @endif
-                                    </div>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <div class="d-grid gap-2 px-3 pb-2">
-                                        <a href="{{ route('crm.agenda') }}" class="btn btn-primary btn-sm">
-                                            <i class="bi bi-calendar-week me-2"></i>
-                                            Ir a la Agenda
-                                        </a>
-                                        <a href="{{ route('crm.tracking') }}" class="btn btn-success btn-sm">
-                                            <i class="bi bi-list-check me-2"></i>
-                                            Ver todos los pendientes
-                                        </a>
-                                    </div>
-                                </li>
-                            </ul>
-                        </li>
 
-                        <li class="nav-item dropdown">
-                            <a class="nav-link fw-bold text-white fw-bold" data-bs-toggle="dropdown" href="#"
-                                role="button" aria-expanded="false">
-                                <i class="bi bi-gear-fill"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
-                                @if (tenant_can('config_report_appearance'))
-                                    <li><a class="dropdown-item text-light" href="{{ route('config.appearance') }}">
-                                            <i class="bi bi-palette2"></i>
-                                            Apariencia del reporte</a>
+                                            <!-- Lista de seguimientos -->
+                                            @if (count($trackings_data) > 0)
+                                                @foreach ($trackings_data as $tracking)
+                                                    <div
+                                                        class="notification-item notification-priority-medium p-2 mb-2 rounded">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div class="flex-grow-1">
+                                                                <h6 class="mb-1 text-dark">
+                                                                    {{ $tracking['customer'] ?? 'Cliente' }}</h6>
+                                                                <p class="mb-1 small text-muted">
+                                                                    {{ $tracking['title'] ?? 'Seguimiento' }}</p>
+                                                                <small class="text-primary">
+                                                                    <i class="bi bi-calendar-event me-1"></i>
+                                                                    {{ $tracking['next_date'] ?? 'Sin fecha' }}
+                                                                </small>
+                                                            </div>
+                                                            <span
+                                                                class="badge bg-{{ $statusMap[$tracking['status']]['color'] ?? 'secondary' }} ms-2">
+                                                                {{ $statusMap[$tracking['status']]['text'] ?? 'Pendiente' }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <div class="text-center bg-light rounded py-3">
+                                                    <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                                                    <p class="text-muted mt-2 mb-0">No hay seguimientos pendientes</p>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </li>
-                                @else
-                                    <li><a class="dropdown-item text-light disabled" href="#!">
-                                            <i class="bi bi-lock"></i>
-                                            Sin acceso a personalización</a>
+                                    <li>
+                                        <hr class="dropdown-divider">
                                     </li>
-                                @endif
-                            </ul>
-                        </li>
+                                    <li>
+                                        <div class="d-grid gap-2 px-3 pb-2">
+                                            <a href="{{ route('crm.agenda') }}" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-calendar-week me-2"></i>
+                                                Ir a la Agenda
+                                            </a>
+                                            <a href="{{ route('crm.tracking') }}" class="btn btn-success btn-sm">
+                                                <i class="bi bi-list-check me-2"></i>
+                                                Ver todos los pendientes
+                                            </a>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endunless
+
+                        @unless ($isStarterPlan)
+                            <li class="nav-item dropdown">
+                                <a class="nav-link fw-bold text-white fw-bold" data-bs-toggle="dropdown" href="#"
+                                    role="button" aria-expanded="false">
+                                    <i class="bi bi-gear-fill"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
+                                    @if (tenant_can('config_report_appearance'))
+                                        <li><a class="dropdown-item text-light" href="{{ route('config.appearance') }}">
+                                                <i class="bi bi-palette2"></i>
+                                                Apariencia del reporte</a>
+                                        </li>
+                                    @else
+                                        <li><a class="dropdown-item text-light disabled" href="#!">
+                                                <i class="bi bi-lock"></i>
+                                                Sin acceso a personalización</a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </li>
+                        @endunless
                     @endif
 
                     <li class="nav-item dropdown me-2">

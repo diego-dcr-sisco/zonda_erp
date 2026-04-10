@@ -93,10 +93,19 @@
             transform: translateY(-5px);
         }
 
+        .bg-teal {
+            background-color: #2F7A78;
+        }
+
+        .bg-teal:hover {
+            box-shadow: 0 10px 20px rgba(47, 122, 120, 0.3);
+            transform: translateY(-5px);
+        }
+
         /* Animaciones personalizadas */
         .card-animate {
-            opacity: 0;
-            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 1;
+            animation: none;
             transition: all 0.3s ease;
         }
 
@@ -129,34 +138,7 @@
             }
         }
 
-        /* Retrasos para animaciones */
-        .card-animate:nth-child(1) {
-            animation-delay: 0.2s;
-        }
-
-        .card-animate:nth-child(2) {
-            animation-delay: 0.4s;
-        }
-
-        .card-animate:nth-child(3) {
-            animation-delay: 0.6s;
-        }
-
-        .card-animate:nth-child(4) {
-            animation-delay: 0.8s;
-        }
-
-        .card-animate:nth-child(5) {
-            animation-delay: 1.0s;
-        }
-
-        .card-animate:nth-child(6) {
-            animation-delay: 1.2s;
-        }
-
-        .card-animate:nth-child(7) {
-            animation-delay: 1.4s;
-        }
+        /* Animación de entrada desactivada para cards del dashboard */
 
         .table-row-animate:nth-child(1) {
             animation-delay: 0.2s;
@@ -431,6 +413,20 @@
                             <i class="bi bi-person-workspace d-block fs-4 mb-2"></i>
                             <h3 class="h6 fw-bold mb-1">Clientes</h3>
                             <p class="small opacity-75 mb-0">Gestión</p>
+                        </div>
+                    </div>
+                </a>
+            @endif
+
+            @if (tenant_is_plan('Starter'))
+                <a href="{{ route('report.manual-certificate.index') }}"
+                    class="card text-white text-decoration-none hover-scale position-relative bg-teal card-animate"
+                    style="width: 150px; height: 130px;">
+                    <div class="position-absolute top-50 start-50 translate-middle w-100 px-2" style="margin-top: -5px;">
+                        <div class="text-center">
+                            <i class="bi bi-files d-block fs-4 mb-2"></i>
+                            <h3 class="h6 fw-bold mb-1">Emision Manual</h3>
+                            <p class="small opacity-75 mb-0">Certificados / Cotizaciones</p>
                         </div>
                     </div>
                 </a>

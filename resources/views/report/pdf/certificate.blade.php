@@ -23,7 +23,8 @@
         }
         
         $primaryColor = $primaryColor ?? '#012640';
-        $secondaryColor = $secondaryColor ?? '#793775';
+        $secondaryColor = $secondaryColor ?? '#02265A';
+        $accentColor = $accentColor ?? '#0A2986';
         
         // Determinar el color del texto basado en el color de fondo
         $primaryTextColor = isColorDark($primaryColor) ? '#ffffff' : '#000000';
@@ -121,6 +122,11 @@
             color: {{ $primaryTextColor }};
         }
 
+        .bg-accent {
+            background-color: {{ $accentColor }};
+            color: #ffffff;
+        }
+
         .square {
             display: inline-block;
             width: 12px;
@@ -161,6 +167,12 @@
 
         .product-table tbody tr:nth-child(odd) td {
             background-color: #f2f3f4;
+        }
+
+        .evidence-title {
+            font-weight: bold;
+            margin-top: 10px;
+            color: {{ $secondaryColor }};
         }
 
         /* Firmas centradas sin flexbox */
@@ -309,7 +321,7 @@
             max-width: 200px;
             height: 150px;
             object-fit: cover;
-            border: 1px solid #ddd;
+            border: 1px solid #d8deea;
             display: block;
             margin: 0 auto 5px auto;
         }
@@ -408,7 +420,7 @@
             <!-- Evidencias del área "servicio" para este servicio específico -->
             @if (isset($photo_evidences['servicio']) && count($photo_evidences['servicio']) > 0)
                 <div class="photo-evidence-section">
-                    <div style="font-weight: bold; margin-top: 10px; color: #0d6efd;">
+                    <div class="evidence-title">
                         EVIDENCIAS FOTOGRÁFICAS - SERVICIO
                     </div>
                     <div class="photo-evidence-grid">
@@ -515,7 +527,7 @@
         <!-- Evidencias del área "notas" -->
         @if (isset($photo_evidences['notas']) && count($photo_evidences['notas']) > 0)
             <div class="photo-evidence-section">
-                <div style="font-weight: bold; margin-top: 10px; color: #6c757d;">
+                <div class="evidence-title">
                     EVIDENCIAS FOTOGRÁFICAS
                 </div>
                 <div class="photo-evidence-grid">
@@ -542,7 +554,7 @@
         <!-- Evidencias del área "recomendaciones" -->
         @if (isset($photo_evidences['recomendaciones']) && count($photo_evidences['recomendaciones']) > 0)
             <div class="photo-evidence-section">
-                <div style="font-weight: bold; margin-top: 10px; color: #198754;">
+                <div class="evidence-title">
                     EVIDENCIAS FOTOGRÁFICAS - RECOMENDACIONES
                 </div>
                 <div class="photo-evidence-grid">
@@ -562,7 +574,7 @@
     <!-- EVIDENCIAS FOTOGRÁFICAS (área general) -->
     @if (isset($photo_evidences['evidencias']) && count($photo_evidences['evidencias']) > 0)
         <div class="row">
-            <div class="bg-blue" style="background-color: #6f42c1;">EVIDENCIAS FOTOGRÁFICAS</div>
+            <div class="bg-blue bg-accent">EVIDENCIAS FOTOGRÁFICAS</div>
             <div class="photo-evidence-grid">
                 @foreach ($photo_evidences['evidencias'] as $evidence)
                     <div class="photo-evidence-item">
